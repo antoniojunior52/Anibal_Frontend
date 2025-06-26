@@ -1,5 +1,3 @@
-// Nenhum alteração foi necessária neste arquivo.
-
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   FileText,
@@ -325,53 +323,15 @@ const FileInput = ({ label, onChange, accept, fileName }) => (
 
 const DashboardCard = ({ icon, title, onClick, color }) => {
   const colorStyles = {
-    indigo: {
-      border: "border-indigo-500",
-      bg: "bg-indigo-100",
-      text: "text-indigo-600",
-    },
-    purple: {
-      border: "border-purple-500",
-      bg: "bg-purple-100",
-      text: "text-purple-600",
-    },
-    teal: {
-      border: "border-teal-500",
-      bg: "bg-teal-100",
-      text: "text-teal-600",
-    },
-    pink: {
-      border: "border-pink-500",
-      bg: "bg-pink-100",
-      text: "text-pink-600",
-    },
-    sky: { border: "border-sky-500", bg: "bg-sky-100", text: "text-sky-600" },
-    red: { border: "border-red-500", bg: "bg-red-100", text: "text-red-600" },
-    green: {
-      border: "border-green-500",
-      bg: "bg-green-100",
-      text: "text-green-600",
-    },
-    yellow: {
-      border: "border-yellow-500",
-      bg: "bg-yellow-100",
-      text: "text-yellow-600",
-    },
-    orange: {
-      border: "border-orange-500",
-      bg: "bg-orange-100",
-      text: "text-orange-600",
-    },
-    cyan: {
-      border: "border-cyan-500",
-      bg: "bg-cyan-100",
-      text: "text-cyan-600",
-    },
-    blue: {
-        border: "border-[#4455a3]",
-        bg: "bg-[#4455a3]/10",
-        text: "text-[#4455a3]",
-    }
+    blue: { border: 'border-[#4455a3]', bg: 'bg-[#4455a3]/10', text: 'text-[#4455a3]' },
+    yellow: { border: 'border-[#fcc841]', bg: 'bg-[#fcc841]/20', text: 'text-[#fcc841]' },
+    orange: { border: 'border-[#ec9c30]', bg: 'bg-[#ec9c30]/10', text: 'text-[#ec9c30]' },
+    green: { border: 'border-green-500', bg: 'bg-green-100', text: 'text-green-600'},
+    red: { border: 'border-red-500', bg: 'bg-red-100', text: 'text-red-600'},
+    purple: { border: 'border-purple-500', bg: 'bg-purple-100', text: 'text-purple-600'},
+    pink: { border: 'border-pink-500', bg: 'bg-pink-100', text: 'text-pink-600'},
+    teal: { border: 'border-teal-500', bg: 'bg-teal-100', text: 'text-teal-600'},
+    sky: { border: 'border-sky-500', bg: 'bg-sky-100', text: 'text-sky-600'}
   };
   const styles = colorStyles[color] || colorStyles.blue;
   return (
@@ -652,7 +612,7 @@ export default function App() {
           icon={<Settings />}
           title="Gerir Perfil"
           onClick={() => navigate("dashboard", "profile")}
-          color="indigo"
+          color="blue"
         />
         {(user?.isSecretaria || user?.isAdmin) && (
           <>
@@ -1516,115 +1476,112 @@ export default function App() {
     );
   };
   const UserManagementFull = () => {
-  // AQUI ESTÁ O NOSSO "ESPIÃO"
-  console.log("1. COMPONENTE UserManagementFull RENDERIZADO. Conteúdo da variável 'users':", users);
-
-  const handlePermissionChange = async (userId, field, value) => {
-    try {
-      if (userId === user.id && field === "isAdmin" && !value) {
-        showNotification(
-          "Não pode remover o seu próprio acesso de Admin.",
-          "error"
-        );
-        return;
+    const handlePermissionChange = async (userId, field, value) => {
+      try {
+        if (userId === user.id && field === "isAdmin" && !value) {
+          showNotification(
+            "Não pode remover o seu próprio acesso de Admin.",
+            "error"
+          );
+          return;
+        }
+        await handleSave("/api/users", fetchUsers)({ [field]: value }, userId);
+        showNotification("Permissões do utilizador atualizadas!", "success");
+      } catch (e) {
+        showNotification(e.message, "error");
       }
-      await handleSave("/api/users", fetchUsers)({ [field]: value }, userId);
-      showNotification("Permissões do utilizador atualizadas!", "success");
-    } catch (e) {
-      showNotification(e.message, "error");
-    }
+    };
+    return (
+      <FormWrapper
+        title="Gerir Utilizadores"
+        icon={<UserCog className="mr-2 text-yellow-500" />}
+      >
+        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+          {users.map((u) => (
+            <div
+              key={u._id}
+              className="flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-50 p-3 rounded space-y-3 md:space-y-0"
+            >
+              <div>
+                <p className="font-semibold">
+                  {u.name}{" "}
+                  {u._id === user.id && (
+                    <span className="text-xs text-[#4455a3]">(Você)</span>
+                  )}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {u.email} - <span className="italic">{u.role}</span>
+                </p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center cursor-pointer">
+                  <span className="mr-2 text-sm">Secretaria</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={u.isSecretaria || false}
+                      onChange={(e) =>
+                        handlePermissionChange(
+                          u._id,
+                          "isSecretaria",
+                          e.target.checked
+                        )
+                      }
+                    />
+                    <div
+                      className={`block w-10 h-6 rounded-full ${
+                        u.isSecretaria ? "bg-[#4455a3]" : "bg-gray-200"
+                      }`}
+                    ></div>
+                    <div
+                      className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
+                        u.isSecretaria ? "translate-x-full" : ""
+                      }`}
+                    ></div>
+                  </div>
+                </label>
+                <label className="flex items-center cursor-pointer">
+                  <span className="mr-2 text-sm">Admin</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={u.isAdmin || false}
+                      onChange={(e) =>
+                        handlePermissionChange(
+                          u._id,
+                          "isAdmin",
+                          e.target.checked
+                        )
+                      }
+                    />
+                    <div
+                      className={`block w-10 h-6 rounded-full ${
+                        u.isAdmin ? "bg-[#4455a3]" : "bg-gray-200"
+                      }`}
+                    ></div>
+                    <div
+                      className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
+                        u.isAdmin ? "translate-x-full" : ""
+                      }`}
+                    ></div>
+                  </div>
+                </label>
+                <button
+                  onClick={() => handleDelete("/api/users", fetchUsers)(u._id)}
+                  className="text-red-500 p-2 rounded hover:bg-red-100 disabled:opacity-50"
+                  disabled={u._id === user.id}
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </FormWrapper>
+    );
   };
-  return (
-    <FormWrapper
-      title="Gerir Utilizadores"
-      icon={<UserCog className="mr-2 text-yellow-500" />}
-    >
-      <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-        {users.map((u) => (
-          <div
-            key={u._id}
-            className="flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-50 p-3 rounded space-y-3 md:space-y-0"
-          >
-            <div>
-              <p className="font-semibold">
-                {u.name}{" "}
-                {u._id === user.id && (
-                  <span className="text-xs text-[#4455a3]">(Você)</span>
-                )}
-              </p>
-              <p className="text-sm text-gray-500">
-                {u.email} - <span className="italic">{u.role}</span>
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center cursor-pointer">
-                <span className="mr-2 text-sm">Secretaria</span>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={u.isSecretaria || false}
-                    onChange={(e) =>
-                      handlePermissionChange(
-                        u._id,
-                        "isSecretaria",
-                        e.target.checked
-                      )
-                    }
-                  />
-                  <div
-                    className={`block w-10 h-6 rounded-full ${
-                      u.isSecretaria ? "bg-[#4455a3]" : "bg-gray-200"
-                    }`}
-                  ></div>
-                  <div
-                    className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
-                      u.isSecretaria ? "translate-x-full" : ""
-                    }`}
-                  ></div>
-                </div>
-              </label>
-              <label className="flex items-center cursor-pointer">
-                <span className="mr-2 text-sm">Admin</span>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={u.isAdmin || false}
-                    onChange={(e) =>
-                      handlePermissionChange(
-                        u._id,
-                        "isAdmin",
-                        e.target.checked
-                      )
-                    }
-                  />
-                  <div
-                    className={`block w-10 h-6 rounded-full ${
-                      u.isAdmin ? "bg-[#4455a3]" : "bg-gray-200"
-                    }`}
-                  ></div>
-                  <div
-                    className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
-                      u.isAdmin ? "translate-x-full" : ""
-                    }`}
-                  ></div>
-                </div>
-              </label>
-              <button
-                onClick={() => handleDelete("/api/users", fetchUsers)(u._id)}
-                className="text-red-500 p-2 rounded hover:bg-red-100 disabled:opacity-50"
-                disabled={u._id === user.id}
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </FormWrapper>
-  );
-};
   const UserRegistrationForm = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
