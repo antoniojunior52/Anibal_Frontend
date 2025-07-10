@@ -1,395 +1,69 @@
-// Nenhum alteração foi necessária neste arquivo.
+// App.js
+import { useState, useEffect, useCallback } from "react";
+import { ArrowLeft } from "lucide-react";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import {
-  FileText,
-  UtensilsCrossed,
-  CalendarDays,
-  Users,
-  LayoutDashboard,
-  UserCircle,
-  LogOut,
-  Lock,
-  Pencil,
-  Trash2,
-  PlusCircle,
-  FileSpreadsheet,
-  Download,
-  Upload,
-  X,
-  Eye,
-  EyeOff,
-  PartyPopper,
-  Milestone,
-  Camera,
-  ArrowLeft,
-  UserCog,
-  UserPlus,
-  MailQuestion,
-  ServerCrash,
-  Megaphone,
-  Info,
-  Search,
-  Settings,
-  Menu,
-} from "lucide-react";
+// API Service
+import apiService from "./apiService";
 
-// --- Configuração da API ---
-const API_URL = "http://localhost:5000";
+// Hooks
+import { loadSheetJS } from "./hooks";
 
-// --- Serviço da API ---
-const apiService = {
-  get: async (endpoint) => {
-    const res = await fetch(`${API_URL}${endpoint}`);
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return res.json();
-  },
-  requestWithBody: async (endpoint, method, data, isFormData = false) => {
-    const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
-    const headers = {};
-    if (!isFormData) {
-      headers["Content-Type"] = "application/json";
-    }
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-    const res = await fetch(`${API_URL}${endpoint}`, {
-      method,
-      headers,
-      body: isFormData ? data : JSON.stringify(data),
-    });
-    const responseData = await res.json();
-    if (!res.ok) {
-      throw new Error(responseData.msg || `HTTP error! status: ${res.status}`);
-    }
-    return responseData;
-  },
-  post: (endpoint, data) => apiService.requestWithBody(endpoint, "POST", data),
-  put: (endpoint, data) => apiService.requestWithBody(endpoint, "PUT", data),
-  delete: (endpoint) => apiService.requestWithBody(endpoint, "DELETE", {}),
-  postForm: (endpoint, formData) =>
-    apiService.requestWithBody(endpoint, "POST", formData, true),
-  putForm: (endpoint, formData) =>
-    apiService.requestWithBody(endpoint, "PUT", formData, true),
-};
+// UI Components
+import Notification from "./components/ui/Notification";
+import Header from "./components/ui/Header";
+import Footer from "./components/ui/Footer";
+import PageTitle from "./components/ui/PageTitle";
+import PageWrapper from "./components/ui/PageWrapper";
+import CustomFileInput from "./components/ui/CustomFileInput";
+import ConfirmationModal from "./components/ui/ConfirmationModal";
+import LoadingSpinner from "./components/ui/LoadingSpinner";
+import Modal from "./components/ui/Modal";
+import ScrollToTopButton from "./components/ui/ScrollToTopButton";
 
-// --- Hooks & Componentes Reutilizáveis ---
-const useScrollAnimation = () => {
-  const ref = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-  useEffect(() => {
-    const element = ref.current;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (element) {
-      observer.observe(element);
-    }
-    return () => {
-      if (element) {
-        observer.unobserve(element);
-      }
-    };
-  }, []);
-  return [ref, isVisible];
-};
+// REMOVER: Importar o CSS do react-datepicker e o seu CSS personalizado
+// import "react-datepicker/dist/react-datepicker.css";
+// import "./styles/datepicker-custom.css";
 
-const loadSheetJS = (callback) => {
-  const existingScript = document.getElementById("sheetjs");
-  if (!existingScript) {
-    const script = document.createElement("script");
-    script.src =
-      "https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js";
-    script.id = "sheetjs";
-    document.body.appendChild(script);
-    script.onload = () => {
-      if (callback) callback();
-    };
-  }
-  if (existingScript && callback) callback();
-};
+// IMPORTAR: MUI LocalizationProvider e AdapterDateFns para o DatePicker
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { ptBR } from 'date-fns/locale'; // Importar o locale português do date-fns
 
-const AnimatedCard = ({ children, className }) => {
-  const [ref, isVisible] = useScrollAnimation();
-  return (
-    <div
-      ref={ref}
-      className={`transition-all duration-700 ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-      } ${className}`}
-    >
-      {children}
-    </div>
-  );
-};
 
-const Notification = ({ message, type, onClose }) => {
-  if (!message) return null;
-  const typeStyles = {
-    success: "bg-green-500",
-    error: "bg-red-500",
-    info: "bg-[#4455a3]",
-  };
-  return (
-    <div
-      className={`fixed top-5 right-5 z-50 flex items-center p-4 rounded-lg shadow-lg text-white transition-all duration-300 transform ${
-        typeStyles[type]
-      } ${
-        message ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
-      }`}
-    >
-      <span className="flex-grow">{message}</span>
-      <button
-        onClick={onClose}
-        className="ml-4 p-1 rounded-full hover:bg-white/20"
-      >
-        <X size={18} />
-      </button>
-    </div>
-  );
-};
+// Page Components
+import HomePage from "./components/pages/HomePage";
+import NewsPage from "./components/pages/NewsPage";
+import NewsDetailPage from "./components/pages/NewsDetailPage";
+import MenuPage from "./components/pages/MenuPage";
+import SchedulesPage from "./components/pages/SchedulesPage";
+import TeachersPage from "./components/pages/TeachersPage";
+import HistoryPage from "./components/pages/HistoryPage";
+import EventsPage from "./components/pages/EventsPage";
+import GalleryPage from "./components/pages/GalleryPage";
+import LoginPage from "./components/pages/LoginPage";
+import RegisterPage from "./components/pages/RegisterPage";
+import ForgotPasswordPage from "./components/pages/ForgotPasswordPage";
+import ResetPasswordPage from "./components/pages/ResetPasswordPage";
+import NotFoundPage from "./components/pages/NotFoundPage";
+import NoticesPage from "./components/pages/NoticesPage";
 
-const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+// Dashboard Components
+import DashboardHome from "./components/dashboard/DashboardHome";
+import ProfileManagementForm from "./components/dashboard/ProfileManagementForm";
+import NewsFormFull from "./components/dashboard/NewsFormFull";
+import TeamFormFull from "./components/dashboard/TeamFormFull";
+import HistoryFormFull from "./components/dashboard/HistoryFormFull";
+import EventsFormFull from "./components/dashboard/EventsFormFull";
+import GalleryFormFull from "./components/dashboard/GalleryFormFull";
+import MenuFormFull from "./components/dashboard/MenuFormFull";
+import SchedulesFormFull from "./components/dashboard/SchedulesFormFull";
+import UserManagementFull from "./components/dashboard/UserManagementFull";
+import UserRegistrationForm from "./components/dashboard/UserRegistrationForm";
+import NoticeFormFull from "./components/dashboard/NoticeFormFull";
 
-  const handleMobileNav = (page) => {
-    onNavigate(page);
-    setIsMenuOpen(false);
-  };
 
-  return (
-    <header className="bg-white/90 backdrop-blur-lg shadow-md sticky top-0 z-40">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          <div
-            className="flex items-center space-x-3 cursor-pointer"
-            onClick={() => onNavigate("home")}
-          >
-            <img
-              src="./logo.jpg"
-              alt="Logo da Escola"
-              className="rounded-full w-12 h-12 object-cover"
-            />
-            <h1 className="text-xl font-bold text-[#4455a3]">
-              E.E Profº Anibal do Prado e Silva
-            </h1>
-          </div>
+export const API_URL = "http://localhost:5000"; // Export API_URL for use in other components
 
-          <nav className="hidden md:flex items-center space-x-1">
-            <NavItem onClick={() => onNavigate("news")}>Notícias</NavItem>
-            <NavItem onClick={() => onNavigate("notices")}>Recados</NavItem>
-            <NavItem onClick={() => onNavigate("teachers")}>Equipe</NavItem>
-            <NavItem onClick={() => onNavigate("history")}>História</NavItem>
-            <NavItem onClick={() => onNavigate("events")}>Eventos</NavItem>
-            <NavItem onClick={() => onNavigate("gallery")}>Galeria</NavItem>
-            <NavItem onClick={() => onNavigate("schedules")}>Horários</NavItem>
-            <NavItem onClick={() => onNavigate("menu")}>Cardápio</NavItem>
-          </nav>
-
-          <div className="hidden md:flex items-center space-x-4">
-            {isLoggedIn ? (
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => onNavigate("dashboard")}
-                  className="flex items-center space-x-2 bg-[#4455a3] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg"
-                >
-                  <LayoutDashboard size={18} /> <span>Dashboard</span>
-                </button>
-                <button
-                  onClick={() => onLogout("Você saiu da sua conta.", "success")}
-                  className="text-gray-600 hover:text-[#4455a3] transition duration-300"
-                >
-                  <LogOut size={20} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={onLogin}
-                  className="flex items-center space-x-2 bg-[#4455a3] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg"
-                >
-                  <UserCircle size={18} /> <span>Área Restrita</span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-[#4455a3]"
-            >
-              <Menu size={28} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {isMenuOpen && (
-        <div className="md:hidden bg-white absolute top-20 left-0 w-full shadow-lg z-50">
-          <nav className="flex flex-col p-4 space-y-2">
-            <MobileNavItem onClick={() => handleMobileNav("news")}>Notícias</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("notices")}>Recados</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("teachers")}>Equipe</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("history")}>História</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("events")}>Eventos</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("gallery")}>Galeria</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("schedules")}>Horários</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("menu")}>Cardápio</MobileNavItem>
-            <hr className="border-gray-200 my-2" />
-            {isLoggedIn ? (
-              <>
-                <MobileNavItem onClick={() => handleMobileNav("dashboard")}>Dashboard</MobileNavItem>
-                <MobileNavItem
-                  onClick={() => {
-                    onLogout("Você saiu da sua conta.", "success");
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  Sair
-                </MobileNavItem>
-              </>
-            ) : (
-              <MobileNavItem
-                onClick={() => {
-                  onLogin();
-                  setIsMenuOpen(false);
-                }}
-              >
-                Área Restrita
-              </MobileNavItem>
-            )}
-          </nav>
-        </div>
-      )}
-    </header>
-  );
-};
-
-const NavItem = ({ children, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="text-gray-600 hover:text-[#4455a3] transition duration-300 px-3 py-2 rounded-md text-sm font-medium relative group"
-  >
-    {children}
-    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#ec9c30] group-hover:w-full transition-all duration-300"></span>
-  </button>
-);
-
-const MobileNavItem = ({ children, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="text-gray-700 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-medium text-left w-full"
-  >
-    {children}
-  </button>
-);
-
-const Footer = () => (
-  <footer className="bg-[#4455a3] text-white">
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
-      <p>&copy; {new Date().getFullYear()} Portal da Escola Anibal do Prado e Silva. Todos os direitos reservados.</p>
-      <p className="text-sm text-gray-300 mt-2">Feito com ❤️ para a comunidade escolar.</p>
-    </div>
-  </footer>
-);
-
-const PageTitle = ({ title, subtitle }) => (
-  <div className="py-12 bg-gray-100 text-center mb-12">
-    <h2 className="text-4xl font-extrabold text-[#1f2937] tracking-tight">{title}</h2>
-    <p className="text-lg text-gray-500 mt-2 max-w-2xl mx-auto">{subtitle}</p>
-  </div>
-);
-
-const PageWrapper = ({ children }) => <div className="animate-fade-in">{children}</div>;
-
-const FileInput = ({ label, onChange, accept, fileName }) => (
-    <div className="w-full">
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <label className="w-full flex items-center px-4 py-2 bg-white text-[#4455a3] rounded-lg shadow-sm tracking-wide uppercase border border-[#4455a3] cursor-pointer hover:bg-[#4455a3] hover:text-white transition-all duration-300">
-            <Upload size={18} className="mr-2" />
-            <span className="text-sm leading-normal truncate">{fileName || "Selecione um arquivo"}</span>
-            <input type="file" className="hidden" onChange={onChange} accept={accept} />
-        </label>
-    </div>
-);
-
-const DashboardCard = ({ icon, title, onClick, color }) => {
-  const colorStyles = {
-    indigo: {
-      border: "border-indigo-500",
-      bg: "bg-indigo-100",
-      text: "text-indigo-600",
-    },
-    purple: {
-      border: "border-purple-500",
-      bg: "bg-purple-100",
-      text: "text-purple-600",
-    },
-    teal: {
-      border: "border-teal-500",
-      bg: "bg-teal-100",
-      text: "text-teal-600",
-    },
-    pink: {
-      border: "border-pink-500",
-      bg: "bg-pink-100",
-      text: "text-pink-600",
-    },
-    sky: { border: "border-sky-500", bg: "bg-sky-100", text: "text-sky-600" },
-    red: { border: "border-red-500", bg: "bg-red-100", text: "text-red-600" },
-    green: {
-      border: "border-green-500",
-      bg: "bg-green-100",
-      text: "text-green-600",
-    },
-    yellow: {
-      border: "border-yellow-500",
-      bg: "bg-yellow-100",
-      text: "text-yellow-600",
-    },
-    orange: {
-      border: "border-orange-500",
-      bg: "bg-orange-100",
-      text: "text-orange-600",
-    },
-    cyan: {
-      border: "border-cyan-500",
-      bg: "bg-cyan-100",
-      text: "text-cyan-600",
-    },
-    blue: {
-        border: "border-[#4455a3]",
-        bg: "bg-[#4455a3]/10",
-        text: "text-[#4455a3]",
-    }
-  };
-  const styles = colorStyles[color] || colorStyles.blue;
-  return (
-    <AnimatedCard>
-      <div
-        onClick={onClick}
-        className={`bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer text-center h-full flex flex-col items-center justify-center border-b-4 ${styles.border}`}
-      >
-        <div className={`flex items-center justify-center h-16 w-16 rounded-full mx-auto mb-4 ${styles.bg} ${styles.text}`}>
-          {React.cloneElement(icon, { size: 40 })}
-        </div>
-        <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
-      </div>
-    </AnimatedCard>
-  );
-};
-
-// --- Componente Principal ---
 export default function App() {
   // --- Estados da Aplicação ---
   const [page, setPage] = useState("home");
@@ -408,7 +82,37 @@ export default function App() {
   const [gallery, setGallery] = useState([]);
   const [users, setUsers] = useState([]);
 
+  // --- Estados para Notificação e Modais ---
   const [notification, setNotification] = useState({ message: "", type: "" });
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmModalMessage, setConfirmModalMessage] = useState("");
+  const [confirmModalCallback, setConfirmModalCallback] = useState(null);
+  const [globalLoading, setGlobalLoading] = useState(false);
+
+  // Estado para o modal genérico
+  const [showGenericModal, setShowGenericModal] = useState(false);
+  const [genericModalTitle, setGenericModalTitle] = useState("");
+  const [genericModalContent, setGenericModalContent] = useState(null);
+
+  // NOVO ESTADO para controlar se os usuários já foram buscados (para evitar loops)
+  const [hasFetchedUsers, setHasFetchedUsers] = useState(false);
+
+
+  // Função para abrir o modal genérico
+  const openGenericModal = useCallback((title, content) => {
+    setGenericModalTitle(title);
+    setGenericModalContent(content);
+    setShowGenericModal(true);
+  }, []);
+
+  // Função para fechar o modal genérico
+  const closeGenericModal = useCallback(() => {
+    setShowGenericModal(false);
+    setGenericModalTitle("");
+    setGenericModalContent(null);
+  }, []);
+
+
   const showNotification = useCallback((message, type) => {
     setNotification({ message, type });
     setTimeout(() => setNotification({ message: "", type: "" }), 4000);
@@ -416,6 +120,7 @@ export default function App() {
 
   // --- Funções de Carregamento de Dados ---
   const fetchAllData = useCallback(async () => {
+    setGlobalLoading(true);
     try {
       const [
         newsData,
@@ -424,6 +129,8 @@ export default function App() {
         historyData,
         eventsData,
         galleryData,
+        menuData,
+        schedulesData,
       ] = await Promise.all([
         apiService.get("/api/news"),
         apiService.get("/api/notices"),
@@ -431,6 +138,8 @@ export default function App() {
         apiService.get("/api/history"),
         apiService.get("/api/events"),
         apiService.get("/api/gallery"),
+        apiService.get("/api/menu").catch(() => ({ fileUrl: "" })),
+        apiService.get("/api/schedules").catch(() => ({})),
       ]);
       setNews(newsData);
       setNotices(noticesData);
@@ -438,12 +147,17 @@ export default function App() {
       setHistory(historyData);
       setEvents(eventsData);
       setGallery(galleryData);
+      setMenuUrl(menuData.fileUrl || "");
+      setSchedules(schedulesData || {});
     } catch (error) {
       showNotification("Falha ao carregar os dados do site.", "error");
+    } finally {
+      setGlobalLoading(false);
     }
   }, [showNotification]);
 
   const fetchUsers = useCallback(async () => {
+    setGlobalLoading(true);
     try {
       const usersData = await apiService.requestWithBody("/api/users", "GET");
       setUsers(usersData);
@@ -451,6 +165,8 @@ export default function App() {
       if (!error.message.includes("403")) {
         showNotification("Falha ao carregar utilizadores.", "error");
       }
+    } finally {
+      setGlobalLoading(false);
     }
   }, [showNotification]);
 
@@ -459,11 +175,19 @@ export default function App() {
     fetchAllData();
   }, [fetchAllData]);
 
+  // EFEITO CORRIGIDO PARA EVITAR LOOP INFINITO
   useEffect(() => {
-    if (user?.isAdmin) {
+    // Apenas busca usuários se o usuário logado for admin e ainda não tivermos buscado
+    if (user?.isAdmin && !hasFetchedUsers) {
       fetchUsers();
+      setHasFetchedUsers(true); // Marca como buscado para evitar chamadas repetidas
+    } else if (!user?.isAdmin && hasFetchedUsers) {
+      // Se o usuário não for mais admin (ex: logout ou permissão alterada), limpa a lista de usuários
+      // e reseta a flag para uma futura sessão de admin
+      setUsers([]);
+      setHasFetchedUsers(false);
     }
-  }, [user, fetchUsers]);
+  }, [user?.isAdmin, fetchUsers, hasFetchedUsers]); // Dependências ajustadas para evitar loop
 
   // --- Gestão de Autenticação e Navegação ---
   const navigate = useCallback((targetPage, payload = null) => {
@@ -472,61 +196,87 @@ export default function App() {
     setPagePayload(payload);
   }, []);
 
+  // Função showConfirm que usa o modal personalizado
+  const showConfirm = (message) => {
+    return new Promise((resolve) => {
+      setConfirmModalMessage(message);
+      setConfirmModalCallback(() => (confirmed) => {
+        setShowConfirmModal(false);
+        resolve(confirmed);
+      });
+      setShowConfirmModal(true);
+    });
+  };
+
   const handleLogout = useCallback(
-    (message, type = "info") => {
+    async (message, type = "info") => {
+      const confirmed = await showConfirm("Tem certeza que deseja sair da sua conta?");
+      if (!confirmed) {
+        showNotification("Logout cancelado.", "info");
+        return;
+      }
+
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("loginTimestamp");
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("user");
       setIsLoggedIn(false);
-      setUser(null);
-      setUsers([]);
+      setUser(null); // Define user como null no logout
+      setUsers([]); // Limpa a lista de usuários no logout
+      setHasFetchedUsers(false); // Reseta a flag de usuários buscados
       navigate("home");
       if (message) {
         showNotification(message, type);
       }
     },
-    [navigate, showNotification]
+    [navigate, showNotification, showConfirm]
   );
 
   const handleLogin = async (email, password, rememberMe) => {
-    const { token, user: userData } = await apiService.post("/api/auth/login", {
-      email,
-      password,
-      rememberMe,
-    });
-    const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem("token", token);
-    storage.setItem("user", JSON.stringify(userData));
-
-    if (rememberMe) {
-      localStorage.setItem("loginTimestamp", new Date().getTime().toString());
-    } else {
-      localStorage.removeItem("loginTimestamp");
-    }
-
-    setUser(userData);
-    setIsLoggedIn(true);
-    navigate("dashboard");
-    showNotification(
-      `Bem-vindo(a) de volta, ${userData.name.split(" ")[0]}!`,
-      "success"
-    );
-  };
-
-  const handleRegisterByAdmin = async (newUserData) => {
+    setGlobalLoading(true);
     try {
-      await apiService.post("/api/auth/register-by-admin", newUserData);
-      showNotification("Utilizador criado com sucesso!", "success");
-      fetchUsers();
+      const { token, user: userData } = await apiService.post("/api/auth/login", {
+        email,
+        password,
+        rememberMe,
+      });
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem("token", token);
+      storage.setItem("user", JSON.stringify(userData));
+
+      // Atualiza o user, mas o useEffect de fetchUsers agora controla a busca
+      setUser(userData);
+      setIsLoggedIn(true);
+      navigate("dashboard");
+      showNotification(
+        `Bem-vindo(a) de volta, ${userData.name.split(" ")[0]}!`,
+        "success"
+      );
     } catch (error) {
       showNotification(error.message, "error");
       throw error;
+    } finally {
+      setGlobalLoading(false);
+    }
+  };
+
+  const handleRegisterByAdmin = async (newUserData) => {
+    setGlobalLoading(true);
+    try {
+      await apiService.post("/api/auth/register-by-admin", newUserData);
+      showNotification("Utilizador criado com sucesso!", "success");
+      fetchUsers(); // Chama fetchUsers para atualizar a lista após o registro
+    } catch (error) {
+      showNotification(error.message, "error");
+      throw error;
+    } finally {
+      setGlobalLoading(false);
     }
   };
 
   const handleProfileUpdate = async (updateData) => {
+    setGlobalLoading(true);
     try {
       const endpoint = `/api/users/profile`;
       const updatedUser = await apiService.put(endpoint, updateData);
@@ -534,53 +284,70 @@ export default function App() {
         ? localStorage
         : sessionStorage;
       storage.setItem("user", JSON.stringify(updatedUser));
+
+      // Atualiza o user, mas o useEffect de fetchUsers agora controla a busca
       setUser(updatedUser);
       showNotification("Perfil atualizado com sucesso!", "success");
     } catch (error) {
       showNotification(error.message, "error");
       throw error;
+    } finally {
+      setGlobalLoading(false);
     }
   };
 
   const handleChangePassword = async (passwordData) => {
+    setGlobalLoading(true);
     try {
       await apiService.put("/api/users/change-password", passwordData);
       showNotification("Senha alterada com sucesso!", "success");
     } catch (error) {
       showNotification(error.message, "error");
       throw error;
+    } finally {
+      setGlobalLoading(false);
     }
   };
 
+  // EFEITO CORRIGIDO PARA CARREGAMENTO INICIAL DO USUÁRIO
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      const storedUser = localStorage.getItem("user");
+    const sessionToken = sessionStorage.getItem("token");
+
+    if (token || sessionToken) {
+      const storedUser = token ? localStorage.getItem("user") : sessionStorage.getItem("user");
       const loginTimestamp = localStorage.getItem("loginTimestamp");
 
-      if (storedUser && loginTimestamp) {
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
         const now = new Date().getTime();
         const twentyFourHours = 24 * 60 * 60 * 1000;
 
-        if (now - parseInt(loginTimestamp, 10) > twentyFourHours) {
+        // Verifica a expiração apenas se o token for do localStorage (lembrar de mim)
+        if (token && loginTimestamp && (now - parseInt(loginTimestamp, 10) > twentyFourHours)) {
           handleLogout(
             "Sua sessão expirou por segurança. Por favor, faça login novamente.",
             "info"
           );
         } else {
-          setUser(JSON.parse(storedUser));
+          // Apenas atualiza o estado 'user' se ele for diferente do atual para evitar re-renders desnecessários
+          if (!user || user.id !== parsedUser.id) { // Comparar por ID para evitar re-render por nova referência
+            setUser(parsedUser);
+          }
           setIsLoggedIn(true);
         }
+      } else {
+        // Se não há usuário armazenado mas há token, algo está errado, faz logout
+        handleLogout("Sessão inválida. Por favor, faça login novamente.", "error");
       }
     } else {
-      const sessionToken = sessionStorage.getItem("token");
-      const sessionUser = sessionStorage.getItem("user");
-      if (sessionToken && sessionUser) {
-        setUser(JSON.parse(sessionUser));
-        setIsLoggedIn(true);
-      }
+      setIsLoggedIn(false);
+      setUser(null);
+      setUsers([]); // Garante que a lista de usuários está vazia se não houver token
+      setHasFetchedUsers(false); // Reseta a flag
     }
-  }, [handleLogout]);
+  }, [handleLogout, user]); // Adiciona 'user' como dependência para que a comparação funcione corretamente
+
 
   useEffect(() => {
     const path = window.location.pathname;
@@ -602,1243 +369,81 @@ export default function App() {
           ? apiService.put
           : apiService.post;
       const url = id ? `${endpoint}/${id}` : endpoint;
-      await service(url, data);
-      if(fetchFunction) fetchFunction();
-    };
 
-  const showConfirm = (message) => {
-    return new Promise((resolve) => {
-      const result = window.confirm(message);
-      resolve(result);
-    });
-  };
+      if (id) {
+        const confirmed = await showConfirm("Tem a certeza que quer atualizar este item?");
+        if (!confirmed) {
+          showNotification("Atualização cancelada.", "info");
+          return;
+        }
+      }
+
+      setGlobalLoading(true);
+      try {
+        await service(url, data);
+        if(fetchFunction) fetchFunction();
+      } catch (e) {
+        showNotification(e.message, "error");
+        throw e;
+      } finally {
+        setGlobalLoading(false);
+      }
+    };
   
   const handleDelete = (endpoint, fetchFunction) => async (id) => {
     const confirmed = await showConfirm(
       "Tem a certeza que quer apagar este item?"
     );
     if (confirmed) {
+      setGlobalLoading(true);
       try {
         await apiService.delete(`${endpoint}/${id}`);
         showNotification("Item removido com sucesso.", "success");
         if(fetchFunction) fetchFunction();
       } catch (e) {
         showNotification(e.message, "error");
+      } finally {
+        setGlobalLoading(false);
       }
+    } else {
+      showNotification("Remoção cancelada.", "info");
     }
   };
 
-  const handleFileSave = async (formData) => {
-    const response = await apiService.postForm("/api/files/upload", formData);
-    setMenuUrl(response.filePath);
-  };
+  // Função para pesquisa global (exemplo)
+  const handleGlobalSearch = useCallback((searchTerm) => {
+    showNotification(`Pesquisa global por: "${searchTerm}" (Funcionalidade a ser implementada)`, "info");
+    // Aqui você implementaria a lógica de pesquisa,
+    // como navegar para uma página de resultados de pesquisa
+    // ou filtrar dados em tempo real se a página atual for uma lista.
+    // Exemplo: navigate('search-results', { query: searchTerm });
+  }, [showNotification]);
 
-  // --- Componentes do Dashboard ---
-  const DashboardHome = () => (
-    <div>
-      <div className="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-[#4455a3]">
-        <h2 className="text-2xl font-bold text-gray-800">
-          Bem-vindo(a), {user?.name}!
-        </h2>
-        <p className="text-gray-600">
-          Seu nível de acesso é:{" "}
-          <span className="font-semibold text-[#4455a3]">
-            {user?.isAdmin ? "Administrador" : user?.isSecretaria ? "Secretaria" : "Utilizador"}
-          </span>
-        </p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        <DashboardCard
-          icon={<Settings />}
-          title="Gerir Perfil"
-          onClick={() => navigate("dashboard", "profile")}
-          color="indigo"
-        />
-        {(user?.isSecretaria || user?.isAdmin) && (
-          <>
-            <DashboardCard icon={<FileText />} title="Gerir Notícias" onClick={() => navigate("dashboard", "news")} color="teal" />
-            <DashboardCard icon={<Megaphone />} title="Gerir Recados" onClick={() => navigate("dashboard", "notices")} color="orange" />
-            <DashboardCard icon={<PartyPopper />} title="Gerir Eventos" onClick={() => navigate("dashboard", "events")} color="pink" />
-            <DashboardCard icon={<Camera />} title="Gerir Galeria" onClick={() => navigate("dashboard", "gallery")} color="sky" />
-            <DashboardCard icon={<UtensilsCrossed />} title="Gerir Cardápio" onClick={() => navigate("dashboard", "menu")} color="red" />
-            <DashboardCard icon={<FileSpreadsheet />} title="Gerir Horários" onClick={() => navigate("dashboard", "schedules")} color="green" />
-          </>
-        )}
-        {user?.isAdmin && (
-          <>
-            <DashboardCard icon={<Users />} title="Gerir Equipe" onClick={() => navigate("dashboard", "team")} color="purple" />
-            <DashboardCard icon={<Milestone />} title="Gerir História" onClick={() => navigate("dashboard", "history")} color="yellow" />
-            <DashboardCard icon={<UserCog />} title="Gerir Utilizadores" onClick={() => navigate("dashboard", "users")} color="orange" />
-            <DashboardCard icon={<UserPlus />} title="Cadastrar Utilizador" onClick={() => navigate("dashboard", "register-user")} color="blue" />
-          </>
-        )}
-        {!user?.isSecretaria && !user?.isAdmin && (
-          <p className="col-span-full text-center text-gray-500">
-            Não tem permissões para gerir conteúdo.
-          </p>
-        )}
-      </div>
-    </div>
-  );
-
-  const FormWrapper = ({ title, icon, children }) => (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-bold mb-4 border-b border-gray-200 pb-2 flex items-center text-gray-800">
-        {icon}
-        {title}
-      </h3>
-      {children}
-    </div>
-  );
-
-  const ProfileManagementForm = () => {
-    const [name, setName] = useState(user?.name || "");
-    const [email, setEmail] = useState(user?.email || "");
-    const [currentPassword, setCurrentPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmNewPassword, setConfirmNewPassword] = useState("");
-
-    const handleInfoSubmit = async (e) => {
-      e.preventDefault();
-      try {
-        await handleProfileUpdate({ name, email });
-      } catch (error) {
-        /* already handled */
-      }
-    };
-
-    const handlePasswordSubmit = async (e) => {
-      e.preventDefault();
-      if (newPassword !== confirmNewPassword) {
-        showNotification("As novas senhas não coincidem.", "error");
-        return;
-      }
-      if (!currentPassword || !newPassword) {
-        showNotification("Todos os campos de senha são obrigatórios.", "error");
-        return;
-      }
-      try {
-        await handleChangePassword({ currentPassword, newPassword });
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmNewPassword("");
-      } catch (error) {
-        /* error is already shown by handleChangePassword */
-      }
-    };
-
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <FormWrapper
-          title="Informações do Perfil"
-          icon={<UserCircle className="mr-2 text-[#4455a3]" />}
-        >
-          <form onSubmit={handleInfoSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Nome
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-2 border rounded mt-1"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border rounded mt-1"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-[#4455a3] text-white p-2 rounded hover:opacity-90"
-            >
-              Salvar Informações
-            </button>
-          </form>
-        </FormWrapper>
-        <FormWrapper
-          title="Alterar Senha"
-          icon={<Lock className="mr-2 text-[#4455a3]" />}
-        >
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Senha Atual
-              </label>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full p-2 border rounded mt-1"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Nova Senha
-              </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full p-2 border rounded mt-1"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Confirmar Nova Senha
-              </label>
-              <input
-                type="password"
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-                className="w-full p-2 border rounded mt-1"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-[#4455a3] text-white p-2 rounded hover:opacity-90"
-            >
-              Alterar Senha
-            </button>
-          </form>
-        </FormWrapper>
-      </div>
-    );
-  };
-
-  const NewsFormFull = () => {
-    const [file, setFile] = useState(null);
-    const [fileName, setFileName] = useState("");
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
-    const [editing, setEditing] = useState(null);
-    const resetForm = () => {
-      setTitle("");
-      setContent("");
-      setFile(null);
-      setFileName("");
-      setEditing(null);
-    };
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      if (!title || !content) {
-        showNotification("Título e conteúdo são obrigatórios.", "error");
-        return;
-      }
-      if (!editing && !file) {
-        showNotification(
-          "É obrigatório adicionar uma imagem para uma nova notícia.",
-          "error"
-        );
-        return;
-      }
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("content", content);
-      if (file) formData.append("image", file);
-      try {
-        await handleSave("/api/news", fetchAllData)(formData, editing?._id);
-        resetForm();
-        showNotification("Notícia salva!", "success");
-      } catch (error) {
-        showNotification(error.message, "error");
-      }
-    };
-    const handleEdit = (item) => {
-      setEditing(item);
-      setTitle(item.title);
-      setContent(item.content);
-      setFile(null);
-      setFileName("");
-      window.scrollTo(0, 0);
-    };
-    return (
-      <FormWrapper
-        title="Gerir Notícias"
-        icon={<FileText className="mr-2 text-teal-500" />}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-          <input
-            type="text"
-            placeholder="Título"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <textarea
-            placeholder="Conteúdo"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full p-2 border rounded"
-            rows="4"
-            required
-          ></textarea>
-          <FileInput
-            label="Imagem da Notícia"
-            onChange={(e) => {
-              setFile(e.target.files[0]);
-              setFileName(e.target.files[0].name);
-            }}
-            accept="image/*"
-            fileName={fileName}
-          />
-          <button
-            type="submit"
-            className="w-full bg-teal-500 text-white p-2 rounded hover:opacity-90 flex items-center justify-center space-x-2"
-          >
-            <PlusCircle size={18} />
-            <span>{editing ? "Atualizar Notícia" : "Adicionar Notícia"}</span>
-          </button>
-          {editing && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="w-full bg-gray-500 text-white p-2 rounded mt-2"
-            >
-              Cancelar Edição
-            </button>
-          )}
-        </form>
-        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-          {news.map((item) => (
-            <div
-              key={item._id}
-              className="flex justify-between items-center bg-gray-50 p-3 rounded"
-            >
-              <span className="font-semibold">{item.title}</span>
-              <div className="space-x-2">
-                <button
-                  onClick={() => handleEdit(item)}
-                  className="text-blue-500"
-                >
-                  <Pencil size={18} />
-                </button>
-                <button
-                  onClick={() =>
-                    handleDelete("/api/news", fetchAllData)(item._id)
-                  }
-                  className="text-red-500"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </FormWrapper>
-    );
-  };
-  
-  const TeamFormFull = () => {
-    const [file, setFile] = useState(null);
-    const [fileName, setFileName] = useState("");
-    const [name, setName] = useState("");
-    const [role, setRole] = useState("Professor(a)");
-    const [subjects, setSubjects] = useState("");
-    const [bio, setBio] = useState("");
-    const [editing, setEditing] = useState(null);
-    const resetForm = () => {
-      setName("");
-      setRole("Professor(a)");
-      setSubjects("");
-      setBio("");
-      setFile(null);
-      setFileName("");
-      setEditing(null);
-    };
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      if (!editing && !file) {
-        showNotification(
-          "É obrigatório adicionar uma foto para um novo membro.",
-          "error"
-        );
-        return;
-      }
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("role", role);
-      formData.append("subjects", subjects);
-      formData.append("bio", bio);
-      if (file) formData.append("photo", file);
-      try {
-        await handleSave("/api/team", fetchAllData)(formData, editing?._id);
-        resetForm();
-        showNotification("Perfil salvo!", "success");
-      } catch (error) {
-        showNotification(error.message, "error");
-      }
-    };
-    const handleEdit = (p) => {
-      setEditing(p);
-      setName(p.name);
-      setRole(p.role);
-      setSubjects(p.subjects.join(", "));
-      setBio(p.bio);
-      setFile(null);
-      setFileName("");
-      window.scrollTo(0, 0);
-    };
-    return (
-      <FormWrapper
-        title="Gerir Equipe"
-        icon={<Users className="mr-2 text-purple-500" />}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="Nome Completo"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full p-2 border rounded"
-              required
-            />
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full p-2 border rounded bg-white"
-            >
-              <option>Professor(a)</option>
-              <option>Diretora</option>
-              <option>Coordenador(a)</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Matérias (separadas por vírgula)"
-              value={subjects}
-              onChange={(e) => setSubjects(e.target.value)}
-              className="w-full p-2 border rounded"
-            />
-            <FileInput
-              label="Foto do Perfil"
-              onChange={(e) => {
-                setFile(e.target.files[0]);
-                setFileName(e.target.files[0].name);
-              }}
-              accept="image/*"
-              fileName={fileName}
-            />
-          </div>
-          <textarea
-            placeholder="Biografia"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            className="w-full p-2 border rounded"
-            rows="3"
-            required
-          ></textarea>
-          <button
-            type="submit"
-            className="w-full bg-purple-500 text-white p-2 rounded hover:opacity-90 flex items-center justify-center space-x-2"
-          >
-            <PlusCircle size={18} />
-            <span>{editing ? "Atualizar Perfil" : "Adicionar Perfil"}</span>
-          </button>
-          {editing && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="w-full bg-gray-500 text-white p-2 rounded mt-2"
-            >
-              Cancelar Edição
-            </button>
-          )}
-        </form>
-        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-          {team.map((p) => (
-            <div
-              key={p._id}
-              className="flex justify-between items-center bg-gray-50 p-3 rounded"
-            >
-              <span className="font-semibold">
-                {p.name} ({p.role})
-              </span>
-              <div className="space-x-2">
-                <button onClick={() => handleEdit(p)} className="text-blue-500">
-                  <Pencil size={18} />
-                </button>
-                <button
-                  onClick={() => handleDelete("/api/team", fetchAllData)(p._id)}
-                  className="text-red-500"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </FormWrapper>
-    );
-  };
-  
-  const HistoryFormFull = () => {
-    const [year, setYear] = useState("");
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [editing, setEditing] = useState(null);
-    const resetForm = () => {
-      setYear("");
-      setTitle("");
-      setDescription("");
-      setEditing(null);
-    };
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      try {
-        await handleSave("/api/history", fetchAllData)(
-          { year, title, description },
-          editing?._id
-        );
-        resetForm();
-        showNotification("Marco histórico salvo!", "success");
-      } catch (error) {
-        showNotification(error.message, "error");
-      }
-    };
-    const handleEdit = (item) => {
-      setEditing(item);
-      setYear(item.year);
-      setTitle(item.title);
-      setDescription(item.description);
-      window.scrollTo(0, 0);
-    };
-    return (
-      <FormWrapper
-        title="Gerir História"
-        icon={<Milestone className="mr-2 text-yellow-500" />}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-          <input
-            type="number"
-            placeholder="Ano (ex: 2024)"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Título do Marco"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <textarea
-            placeholder="Descrição"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-2 border rounded"
-            rows="3"
-            required
-          ></textarea>
-          <button
-            type="submit"
-            className="w-full bg-yellow-500 text-white p-2 rounded hover:opacity-90"
-          >
-            {editing ? "Atualizar Marco" : "Adicionar Marco"}
-          </button>
-          {editing && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="w-full bg-gray-500 text-white p-2 rounded mt-2"
-            >
-              Cancelar Edição
-            </button>
-          )}
-        </form>
-        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-          {history.map((item) => (
-            <div
-              key={item._id}
-              className="flex justify-between items-center bg-gray-50 p-3 rounded"
-            >
-              <div>
-                <span className="font-semibold">
-                  {item.year}: {item.title}
-                </span>
-              </div>
-              <div className="space-x-2">
-                <button
-                  onClick={() => handleEdit(item)}
-                  className="text-blue-500"
-                >
-                  <Pencil size={18} />
-                </button>
-                <button
-                  onClick={() =>
-                    handleDelete("/api/history", fetchAllData)(item._id)
-                  }
-                  className="text-red-500"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </FormWrapper>
-    );
-  };
-  const EventsFormFull = () => {
-    const [date, setDate] = useState("");
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [editing, setEditing] = useState(null);
-    const resetForm = () => {
-      setDate("");
-      setTitle("");
-      setDescription("");
-      setEditing(null);
-    };
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      try {
-        await handleSave("/api/events", fetchAllData)(
-          { date, title, description },
-          editing?._id
-        );
-        resetForm();
-        showNotification("Evento salvo!", "success");
-      } catch (e) {
-        showNotification(e.message, "error");
-      }
-    };
-    const handleEdit = (item) => {
-      setEditing(item);
-      setDate(item.date.split("T")[0]);
-      setTitle(item.title);
-      setDescription(item.description);
-      window.scrollTo(0, 0);
-    };
-    return (
-      <FormWrapper
-        title="Gerir Eventos"
-        icon={<PartyPopper className="mr-2 text-pink-500" />}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Título do Evento"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <textarea
-            placeholder="Descrição"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-2 border rounded"
-            rows="3"
-            required
-          ></textarea>
-          <button
-            type="submit"
-            className="w-full bg-pink-500 text-white p-2 rounded hover:opacity-90"
-          >
-            {editing ? "Atualizar Evento" : "Adicionar Evento"}
-          </button>
-          {editing && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="w-full bg-gray-500 text-white p-2 rounded mt-2"
-            >
-              Cancelar Edição
-            </button>
-          )}
-        </form>
-        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-          {events.map((item) => (
-            <div
-              key={item._id}
-              className="flex justify-between items-center bg-gray-50 p-3 rounded"
-            >
-              <div>
-                <span className="font-semibold">{item.title}</span>
-                <p className="text-sm text-gray-500">
-                  {new Date(item.date).toLocaleDateString("pt-BR", {
-                    timeZone: "UTC",
-                  })}
-                </p>
-              </div>
-              <div className="space-x-2">
-                <button
-                  onClick={() => handleEdit(item)}
-                  className="text-blue-500"
-                >
-                  <Pencil size={18} />
-                </button>
-                <button
-                  onClick={() =>
-                    handleDelete("/api/events", fetchAllData)(item._id)
-                  }
-                  className="text-red-500"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </FormWrapper>
-    );
-  };
-  const GalleryFormFull = () => {
-    const [file, setFile] = useState(null);
-    const [fileName, setFileName] = useState("");
-    const [caption, setCaption] = useState("");
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      if (!file) {
-        showNotification("Selecione uma imagem.", "error");
-        return;
-      }
-      const formData = new FormData();
-      formData.append("caption", caption);
-      formData.append("image", file);
-      try {
-        await handleSave("/api/gallery", fetchAllData)(formData);
-        setFile(null);
-        setFileName("");
-        setCaption("");
-        showNotification("Imagem adicionada!", "success");
-      } catch (error) {
-        showNotification(error.message, "error");
-      }
-    };
-    return (
-      <FormWrapper
-        title="Gerir Galeria"
-        icon={<Camera className="mr-2 text-sky-500" />}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-          <FileInput
-            label="Imagem"
-            onChange={(e) => {
-              setFile(e.target.files[0]);
-              setFileName(e.target.files[0].name);
-            }}
-            accept="image/*"
-            fileName={fileName}
-          />
-          <input
-            type="text"
-            placeholder="Legenda"
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <button
-            type="submit"
-            className="w-full bg-sky-500 text-white p-2 rounded hover:opacity-90"
-          >
-            Adicionar Imagem
-          </button>
-        </form>
-        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-          {gallery.map((item) => (
-            <div
-              key={item._id}
-              className="flex justify-between items-center bg-gray-50 p-3 rounded"
-            >
-              <span>{item.caption}</span>
-              <button
-                onClick={() =>
-                  handleDelete("/api/gallery", fetchAllData)(item._id)
-                }
-                className="text-red-500"
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </FormWrapper>
-    );
-  };
-  const MenuFormFull = () => {
-    const [file, setFile] = useState(null);
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
-        try {
-          await handleFileSave(formData);
-          showNotification("Cardápio atualizado!", "success");
-          setFile(null);
-        } catch (e) {
-          showNotification(e.message, "error");
-        }
-      } else {
-        showNotification("Selecione um arquivo PDF.", "error");
-      }
-    };
-    return (
-      <FormWrapper
-        title="Gerir Cardápio"
-        icon={<UtensilsCrossed className="mr-2 text-red-500" />}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <FileInput
-            label="Arquivo PDF do Cardápio"
-            onChange={(e) => setFile(e.target.files[0])}
-            accept=".pdf"
-            fileName={file?.name}
-          />
-          <button
-            type="submit"
-            className="w-full bg-red-500 text-white p-2 rounded hover:opacity-90"
-          >
-            Atualizar Cardápio
-          </button>
-        </form>
-      </FormWrapper>
-    );
-  };
-  const SchedulesFormFull = () => {
-    const classList = [
-      "6º Ano A",
-      "6º Ano B",
-      "7º Ano A",
-      "7º Ano B",
-      "8º Ano A",
-      "8º Ano B",
-      "9º Ano A",
-      "9º Ano B",
-    ];
-    const [file, setFile] = useState(null);
-    const [scheduleClass, setScheduleClass] = useState("");
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      if (!scheduleClass || !file) {
-        showNotification("Selecione uma turma e o arquivo.", "error");
-        return;
-      }
-      const formData = new FormData();
-      formData.append("file", file);
-      try {
-        const response = await apiService.postForm(
-          "/api/files/upload",
-          formData
-        );
-        setSchedules({ ...schedules, [scheduleClass]: response.filePath });
-        setScheduleClass("");
-        setFile(null);
-        showNotification("Horário salvo!", "success");
-      } catch (e) {
-        showNotification(e.message, "error");
-      }
-    };
-    const handleDeleteSchedule = (className) => {
-      const newSchedules = { ...schedules };
-      delete newSchedules[className];
-      setSchedules(newSchedules);
-      showNotification(`Horário de ${className} removido.`, "success");
-    };
-    return (
-      <FormWrapper
-        title="Gerir Horários"
-        icon={<FileSpreadsheet className="mr-2 text-green-500" />}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-          <select
-            value={scheduleClass}
-            onChange={(e) => setScheduleClass(e.target.value)}
-            className="w-full p-2 border bg-white rounded"
-            required
-          >
-            <option value="" disabled>
-              Selecione uma turma
-            </option>
-            {classList.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <FileInput
-            label="Arquivo Excel"
-            onChange={(e) => setFile(e.target.files[0])}
-            accept=".xlsx, .xls"
-            fileName={file?.name}
-          />
-          <button
-            type="submit"
-            className="w-full bg-green-500 text-white p-2 rounded hover:opacity-90"
-          >
-            Salvar Horário
-          </button>
-        </form>
-        <div className="space-y-3 max-h-40 overflow-y-auto pr-2">
-          {Object.keys(schedules).map((name) => (
-            <div
-              key={name}
-              className="flex justify-between items-center bg-gray-50 p-3 rounded"
-            >
-              <span>{name}</span>
-              <button
-                onClick={() => handleDeleteSchedule(name)}
-                className="text-red-500"
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </FormWrapper>
-    );
-  };
-  const UserManagementFull = () => {
-  // AQUI ESTÁ O NOSSO "ESPIÃO"
-  console.log("1. COMPONENTE UserManagementFull RENDERIZADO. Conteúdo da variável 'users':", users);
-
-  const handlePermissionChange = async (userId, field, value) => {
-    try {
-      if (userId === user.id && field === "isAdmin" && !value) {
-        showNotification(
-          "Não pode remover o seu próprio acesso de Admin.",
-          "error"
-        );
-        return;
-      }
-      await handleSave("/api/users", fetchUsers)({ [field]: value }, userId);
-      showNotification("Permissões do utilizador atualizadas!", "success");
-    } catch (e) {
-      showNotification(e.message, "error");
-    }
-  };
-  return (
-    <FormWrapper
-      title="Gerir Utilizadores"
-      icon={<UserCog className="mr-2 text-yellow-500" />}
-    >
-      <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-        {users.map((u) => (
-          <div
-            key={u._id}
-            className="flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-50 p-3 rounded space-y-3 md:space-y-0"
-          >
-            <div>
-              <p className="font-semibold">
-                {u.name}{" "}
-                {u._id === user.id && (
-                  <span className="text-xs text-[#4455a3]">(Você)</span>
-                )}
-              </p>
-              <p className="text-sm text-gray-500">
-                {u.email} - <span className="italic">{u.role}</span>
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center cursor-pointer">
-                <span className="mr-2 text-sm">Secretaria</span>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={u.isSecretaria || false}
-                    onChange={(e) =>
-                      handlePermissionChange(
-                        u._id,
-                        "isSecretaria",
-                        e.target.checked
-                      )
-                    }
-                  />
-                  <div
-                    className={`block w-10 h-6 rounded-full ${
-                      u.isSecretaria ? "bg-[#4455a3]" : "bg-gray-200"
-                    }`}
-                  ></div>
-                  <div
-                    className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
-                      u.isSecretaria ? "translate-x-full" : ""
-                    }`}
-                  ></div>
-                </div>
-              </label>
-              <label className="flex items-center cursor-pointer">
-                <span className="mr-2 text-sm">Admin</span>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={u.isAdmin || false}
-                    onChange={(e) =>
-                      handlePermissionChange(
-                        u._id,
-                        "isAdmin",
-                        e.target.checked
-                      )
-                    }
-                  />
-                  <div
-                    className={`block w-10 h-6 rounded-full ${
-                      u.isAdmin ? "bg-[#4455a3]" : "bg-gray-200"
-                    }`}
-                  ></div>
-                  <div
-                    className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
-                      u.isAdmin ? "translate-x-full" : ""
-                    }`}
-                  ></div>
-                </div>
-              </label>
-              <button
-                onClick={() => handleDelete("/api/users", fetchUsers)(u._id)}
-                className="text-red-500 p-2 rounded hover:bg-red-100 disabled:opacity-50"
-                disabled={u._id === user.id}
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </FormWrapper>
-  );
-};
-  const UserRegistrationForm = () => {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [role, setRole] = useState("Professor(a)");
-    const [isSecretaria, setIsSecretaria] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const resetForm = () => {
-      setName("");
-      setEmail("");
-      setPassword("");
-      setRole("Professor(a)");
-      setIsSecretaria(false);
-      setIsAdmin(false);
-    };
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      try {
-        await handleRegisterByAdmin({
-          name,
-          email,
-          password,
-          role,
-          isSecretaria,
-          isAdmin,
-        });
-        resetForm();
-      } catch (error) {
-        // O erro já é notificado
-      }
-    };
-    return (
-      <FormWrapper
-        title="Cadastrar Novo Utilizador"
-        icon={<UserPlus className="mr-2 text-[#4455a3]" />}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Nome Completo"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Senha Provisória"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full p-2 border bg-white rounded"
-          >
-            <option>Professor(a)</option>
-            <option>Secretaria</option>
-            <option>Coordenação</option>
-            <option>Diretora</option>
-            <option>Admin</option>
-          </select>
-          <div className="flex items-center space-x-6 pt-2">
-            <label className="flex items-center cursor-pointer">
-              <span className="mr-3 text-sm font-medium text-gray-900">
-                Secretaria
-              </span>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={isSecretaria}
-                  onChange={(e) => setIsSecretaria(e.target.checked)}
-                  className="sr-only"
-                />
-                <div
-                  className={`block w-10 h-6 rounded-full ${
-                    isSecretaria ? "bg-[#4455a3]" : "bg-gray-200"
-                  }`}
-                ></div>
-                <div
-                  className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
-                    isSecretaria ? "translate-x-full" : ""
-                  }`}
-                ></div>
-              </div>
-            </label>
-            <label className="flex items-center cursor-pointer">
-              <span className="mr-3 text-sm font-medium text-gray-900">
-                Admin
-              </span>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={isAdmin}
-                  onChange={(e) => setIsAdmin(e.target.checked)}
-                  className="sr-only"
-                />
-                <div
-                  className={`block w-10 h-6 rounded-full ${
-                    isAdmin ? "bg-[#4455a3]" : "bg-gray-200"
-                  }`}
-                ></div>
-                <div
-                  className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
-                    isAdmin ? "translate-x-full" : ""
-                  }`}
-                ></div>
-              </div>
-            </label>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-[#4455a3] text-white p-2 rounded hover:opacity-90"
-          >
-            Cadastrar Utilizador
-          </button>
-        </form>
-      </FormWrapper>
-    );
-  };
-  const NoticeFormFull = () => {
-    const [content, setContent] = useState("");
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      try {
-        await handleSave("/api/notices", fetchAllData)({ content });
-        setContent("");
-        showNotification("Recado publicado com sucesso!", "success");
-      } catch (error) {
-        showNotification(error.message, "error");
-      }
-    };
-    return (
-      <FormWrapper
-        title="Gerir Recados do Dia"
-        icon={<Megaphone className="mr-2 text-[#ec9c30]" />}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-          <textarea
-            placeholder="Escreva o seu recado aqui..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full p-2 border rounded"
-            rows="4"
-            required
-            maxLength="500"
-          ></textarea>
-          <button
-            type="submit"
-            className="w-full bg-[#ec9c30] text-white p-2 rounded hover:opacity-90"
-          >
-            Publicar Recado
-          </button>
-        </form>
-        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-          {notices.map((notice) => (
-            <div
-              key={notice._id}
-              className="flex justify-between items-center bg-gray-50 p-3 rounded"
-            >
-              <p className="text-sm text-gray-700 flex-1 mr-4">
-                {notice.content}
-              </p>
-              {user?.isAdmin && (
-                <button
-                  onClick={() =>
-                    handleDelete("/api/notices", fetchAllData)(notice._id)
-                  }
-                  className="text-red-500"
-                >
-                  <Trash2 size={18} />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </FormWrapper>
-    );
-  };
 
   const renderPage = () => {
     if (!isLoggedIn && page === "dashboard") {
-      return <LoginPage />;
+      return <LoginPage navigate={navigate} showNotification={showNotification} handleLogin={handleLogin} />;
     }
 
     switch (page) {
-      case "home": return <HomePage />;
-      case "register": return <RegisterPage />;
-      case "news": return <NewsPage />;
-      case "notices": return <NoticesPage />;
+      case "home": return <HomePage navigate={navigate} news={news} events={events} />;
+      case "register": return <RegisterPage navigate={navigate} showNotification={showNotification} apiService={apiService} />;
+      case "news": return <NewsPage news={news} navigate={navigate} />;
+      case "notices": return <NoticesPage notices={notices} />;
       case "news-detail":
         const article = news.find((n) => n._id === pagePayload);
-        return article ? (<NewsDetailPage article={article} onBack={() => navigate("news")} />) : (<NotFoundPage message="A notícia que você procura não foi encontrada." />);
-      case "menu": return <MenuPage />;
-      case "schedules": return <SchedulesPage />;
-      case "teachers": return <TeachersPage />;
-      case "history": return <HistoryPage />;
-      case "events": return <EventsPage />;
-      case "gallery": return <GalleryPage />;
-      case "login": return <LoginPage />;
-      case "forgot-password": return <ForgotPasswordPage />;
-      case "reset-password": return <ResetPasswordPage token={pagePayload} />;
+        return article ? (<NewsDetailPage article={article} onBack={() => navigate("news")} />) : (<NotFoundPage message="A notícia que você procura não foi encontrada." navigate={navigate} />);
+      case "menu": return <MenuPage menuUrl={menuUrl} />;
+      case "schedules": return <SchedulesPage schedules={schedules} />;
+      case "teachers": return <TeachersPage team={team} />;
+      case "history": return <HistoryPage history={history} />;
+      case "events": return <EventsPage events={events} />;
+      case "gallery": return <GalleryPage gallery={gallery} />;
+      case "login": return <LoginPage navigate={navigate} showNotification={showNotification} handleLogin={handleLogin} />;
+      case "forgot-password": return <ForgotPasswordPage navigate={navigate} showNotification={showNotification} apiService={apiService} />;
+      case "reset-password": return <ResetPasswordPage token={pagePayload} navigate={navigate} showNotification={showNotification} apiService={apiService} />;
       case "dashboard":
-        if (!isLoggedIn) return <LoginPage />;
+        if (!isLoggedIn) return <LoginPage navigate={navigate} showNotification={showNotification} handleLogin={handleLogin} />;
         const backButton = (
           <button onClick={() => navigate("dashboard")} className="mb-8 flex items-center font-semibold text-[#4455a3] hover:opacity-80 transition-all">
             <ArrowLeft size={18} className="mr-2" /> Voltar ao Painel
@@ -1846,18 +451,18 @@ export default function App() {
         );
         let dashboardContent;
         switch (pagePayload) {
-          case "profile": dashboardContent = <div>{backButton}<ProfileManagementForm /></div>; break;
-          case "news": dashboardContent = <div>{backButton}<NewsFormFull /></div>; break;
-          case "notices": dashboardContent = <div>{backButton}<NoticeFormFull /></div>; break;
-          case "team": dashboardContent = <div>{backButton}<TeamFormFull /></div>; break;
-          case "history": dashboardContent = <div>{backButton}<HistoryFormFull /></div>; break;
-          case "events": dashboardContent = <div>{backButton}<EventsFormFull /></div>; break;
-          case "gallery": dashboardContent = <div>{backButton}<GalleryFormFull /></div>; break;
-          case "menu": dashboardContent = <div>{backButton}<MenuFormFull /></div>; break;
-          case "schedules": dashboardContent = <div>{backButton}<SchedulesFormFull /></div>; break;
-          case "users": dashboardContent = <div>{backButton}<UserManagementFull /></div>; break;
-          case "register-user": dashboardContent = <div>{backButton}<UserRegistrationForm /></div>; break;
-          default: dashboardContent = <DashboardHome />;
+          case "profile": dashboardContent = <div>{backButton}<ProfileManagementForm user={user} handleProfileUpdate={handleProfileUpdate} handleChangePassword={handleChangePassword} showNotification={showNotification} /></div>; break;
+          case "news": dashboardContent = <div>{backButton}<NewsFormFull news={news} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} CustomFileInput={CustomFileInput} /></div>; break;
+          case "notices": dashboardContent = <div>{backButton}<NoticeFormFull notices={notices} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} user={user} /></div>; break;
+          case "team": dashboardContent = <div>{backButton}<TeamFormFull team={team} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} CustomFileInput={CustomFileInput} /></div>; break;
+          case "history": dashboardContent = <div>{backButton}<HistoryFormFull history={history} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} /></div>; break;
+          case "events": dashboardContent = <div>{backButton}<EventsFormFull events={events} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} /></div>; break;
+          case "gallery": dashboardContent = <div>{backButton}<GalleryFormFull gallery={gallery} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} CustomFileInput={CustomFileInput} /></div>; break;
+          case "menu": dashboardContent = <div>{backButton}<MenuFormFull setMenuUrl={setMenuUrl} showNotification={showNotification} apiService={apiService} fetchAllData={fetchAllData} CustomFileInput={CustomFileInput} /></div>; break;
+          case "schedules": dashboardContent = <div>{backButton}<SchedulesFormFull schedules={schedules} setSchedules={setSchedules} showNotification={showNotification} apiService={apiService} fetchAllData={fetchAllData} CustomFileInput={CustomFileInput} /></div>; break;
+          case "users": dashboardContent = <div>{backButton}<UserManagementFull users={users} user={user} fetchUsers={fetchUsers} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} /></div>; break;
+          case "register-user": dashboardContent = <div>{backButton}<UserRegistrationForm handleRegisterByAdmin={handleRegisterByAdmin} /></div>; break;
+          default: dashboardContent = <DashboardHome navigate={navigate} user={user} />;
         }
         return (
           <PageWrapper>
@@ -1865,969 +470,8 @@ export default function App() {
             <div className="container mx-auto px-4 pb-12">{dashboardContent}</div>
           </PageWrapper>
         );
-      default: return <NotFoundPage />;
+      default: return <NotFoundPage navigate={navigate} />;
     }
-  };
-
-  const HomePage = () => (
-    <div>
-      <div className="relative bg-gradient-to-br from-[#4455a3] to-[#6a79c1] text-white text-center overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
-          <h2 className="text-5xl font-extrabold tracking-tight sm:text-6xl animate-fade-in-up">
-            Bem-vindo ao Portal da Escola Anibal do Prado e Silva!
-          </h2>
-          <p className="mt-4 text-xl max-w-2xl mx-auto animate-fade-in-up animation-delay-300">
-            Sua fonte central de informações, notícias e comunicados importantes.
-          </p>
-        </div>
-        <div className="-mt-16 text-[#f3f4f6]">
-          <svg className="w-full h-auto" viewBox="0 0 1440 100" fill="currentColor" preserveAspectRatio="none">
-            <path d="M0,50 C360,100 1080,0 1440,50 L1440,100 L0,100 Z"></path>
-          </svg>
-        </div>
-      </div>
-      <div className="py-16 bg-gray-100">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <HomeCard icon={<FileText size={40} />} title="Últimas Notícias" description="Fique por dentro dos eventos." onClick={() => navigate("news")} />
-            <HomeCard icon={<Megaphone size={40} />} title="Recados do Dia" description="Avisos e comunicados rápidos." onClick={() => navigate("notices")} />
-            <HomeCard icon={<Users size={40} />} title="Nossa Equipe" description="Conheça a diretoria e os professores." onClick={() => navigate("teachers")} />
-            <HomeCard icon={<Milestone size={40} />} title="Nossa História" description="Conheça a trajetória da escola." onClick={() => navigate("history")} />
-            <HomeCard icon={<PartyPopper size={40} />} title="Próximos Eventos" description="Veja o que vem por aí." onClick={() => navigate("events")} />
-            <HomeCard icon={<Camera size={40} />} title="Galeria de Fotos" description="Reviva nossos melhores momentos." onClick={() => navigate("gallery")} />
-            <HomeCard icon={<CalendarDays size={40} />} title="Horários de Aulas" description="Consulte os horários das turmas." onClick={() => navigate("schedules")} />
-            <HomeCard icon={<UtensilsCrossed size={40} />} title="Cardápio Semanal" description="Confira o cardápio oficial." onClick={() => navigate("menu")} />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const HomeCard = ({ icon, title, description, onClick }) => (
-    <AnimatedCard>
-      <div
-        onClick={onClick}
-        className="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer text-center h-full flex flex-col items-center justify-center"
-      >
-        <div className="flex items-center justify-center h-16 w-16 rounded-full bg-[#4455a3]/10 text-[#4455a3] mx-auto mb-4">
-          {icon}
-        </div>
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">{title}</h3>
-        <p className="text-gray-500">{description}</p>
-      </div>
-    </AnimatedCard>
-  );
-
-  const NewsPage = () => (
-    <PageWrapper>
-      <PageTitle
-        title="Notícias e Comunicados"
-        subtitle="Acompanhe os últimos acontecimentos da nossa comunidade escolar."
-      />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {news.map((item) => (
-          <AnimatedCard key={item._id}>
-            <div
-              onClick={() => navigate("news-detail", item._id)}
-              className="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col cursor-pointer group"
-            >
-              <img
-                src={`${API_URL}${item.image}`}
-                alt={item.title}
-                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="p-6 flex-grow flex flex-col">
-                <p className="text-sm text-gray-500 mb-2">
-                  {new Date(item.date).toLocaleDateString("pt-BR", {
-                    timeZone: "UTC",
-                  })}
-                </p>
-                <h3 className="text-xl font-bold text-gray-800 mb-3 flex-grow group-hover:text-[#4455a3] transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-gray-600">
-                  {item.content.substring(0, 100)}...
-                </p>
-              </div>
-            </div>
-          </AnimatedCard>
-        ))}
-      </div>
-    </PageWrapper>
-  );
-
-  const MenuPage = () => (
-    <PageWrapper>
-      <PageTitle
-        title="Cardápio Escolar"
-        subtitle="Alimentação saudável e balanceada para os nossos alunos."
-      />
-      <div className="container mx-auto max-w-5xl px-4 pb-12 flex justify-center">
-        <AnimatedCard className="w-full">
-          <div className="bg-white rounded-2xl shadow-2xl p-4 md:p-8 transform hover:-translate-y-2 transition-transform duration-300 border-t-4 border-[#ec9c30]">
-            <div className="w-full h-[60vh] md:h-[75vh] bg-gray-100 rounded-lg overflow-hidden mb-6 shadow-inner">
-              <iframe
-                src={menuUrl ? `${API_URL}${menuUrl}` : ""}
-                className="w-full h-full border-0"
-                title="Cardápio PDF"
-              ></iframe>
-            </div>
-            <div className="text-center">
-              <a
-                href={menuUrl ? `${API_URL}${menuUrl}` : "#"}
-                download="cardapio_escolar.pdf"
-                className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#ec9c30] hover:opacity-90 transition duration-300 shadow-lg"
-              >
-                <Download className="mr-3" size={20} />
-                Baixar Cardápio (PDF)
-              </a>
-            </div>
-          </div>
-        </AnimatedCard>
-      </div>
-    </PageWrapper>
-  );
-
-  const ExcelViewer = ({ fileUrl }) => {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    useEffect(() => {
-      if (!fileUrl || typeof window.XLSX === "undefined") return;
-      setLoading(true);
-      const processFile = async () => {
-        try {
-          const response = await fetch(fileUrl);
-          const arrayBuffer = await response.arrayBuffer();
-          const workbook = window.XLSX.read(arrayBuffer, { type: "buffer" });
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = window.XLSX.utils.sheet_to_json(worksheet, {
-            header: 1,
-          });
-          setData(jsonData);
-        } catch (error) {
-          setData(null);
-        } finally {
-          setLoading(false);
-        }
-      };
-      processFile();
-    }, [fileUrl]);
-    if (loading)
-      return (
-        <div className="text-center p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4455a3] mx-auto"></div>
-          <p className="mt-4 text-gray-500">A carregar o horário...</p>
-        </div>
-      );
-    if (!data)
-      return (
-        <div className="text-center p-8">
-          <Info className="h-12 w-12 text-red-500 mx-auto" />
-          <p className="mt-4 text-red-600 font-semibold">
-            Não foi possível carregar o ficheiro do horário.
-          </p>
-        </div>
-      );
-    return (
-      <div className="overflow-x-auto rounded-lg shadow-md border">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-100">
-            <tr>
-              {data[0]?.map((header, i) => (
-                <th
-                  key={i}
-                  className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
-                >
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {data.slice(1).map((row, i) => (
-              <tr
-                key={i}
-                className="hover:bg-blue-50 transition-colors duration-200"
-              >
-                {row.map((cell, j) => (
-                  <td
-                    key={j}
-                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-800"
-                  >
-                    {cell}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
-  const SchedulesPage = () => {
-    const [selectedClass, setSelectedClass] = useState(
-      Object.keys(schedules)[0] || ""
-    );
-    const scheduleKeys = Object.keys(schedules).join(",");
-
-    useEffect(() => {
-      const availableClasses = Object.keys(schedules);
-      if (
-        !availableClasses.includes(selectedClass) &&
-        availableClasses.length > 0
-      ) {
-        setSelectedClass(availableClasses[0]);
-      }
-    }, [scheduleKeys, selectedClass]);
-
-    const scheduleUrl = schedules[selectedClass]
-      ? `${API_URL}${schedules[selectedClass]}`
-      : null;
-    return (
-      <PageWrapper>
-        <PageTitle
-          title="Horários de Aulas"
-          subtitle="Selecione uma turma para visualizar os horários detalhados."
-        />
-        <div className="container mx-auto max-w-6xl px-4 pb-12">
-          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-2xl border-t-4 border-[#fcc841]">
-            {Object.keys(schedules).length > 0 ? (
-              <>
-                <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center">
-                  <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <select
-                      value={selectedClass}
-                      onChange={(e) => setSelectedClass(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#4455a3] appearance-none bg-white"
-                    >
-                      {Object.keys(schedules).map((className) => (
-                        <option key={className} value={className}>
-                          {className}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  {scheduleUrl && (
-                    <a
-                      href={scheduleUrl}
-                      download={`${selectedClass}_horario.xlsx`}
-                      className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-[#4455a3] hover:opacity-90 transition duration-300 shadow-lg"
-                    >
-                      <Download className="mr-2" size={18} />
-                      Baixar Horário
-                    </a>
-                  )}
-                </div>
-                {scheduleUrl ? (
-                  <ExcelViewer fileUrl={scheduleUrl} />
-                ) : (
-                  <div className="text-center p-8">
-                    <Info className="h-12 w-12 text-gray-400 mx-auto" />
-                    <p className="mt-4 text-gray-500">
-                      Selecione uma turma para ver o horário.
-                    </p>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-center p-12">
-                <CalendarDays className="h-16 w-16 text-gray-300 mx-auto" />
-                <p className="mt-4 text-xl text-gray-500">
-                  Nenhum horário de turma foi carregado ainda.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </PageWrapper>
-    );
-  };
-
-  const TeachersPage = () => {
-    const [selectedProfile, setSelectedProfile] = useState(null);
-    const director = team.find((p) => p.role === "Diretora");
-    const teachers = team.filter((p) => p.role !== "Diretora");
-    return (
-      <PageWrapper>
-        <PageTitle
-          title="Nossa Equipe"
-          subtitle="Conheça a liderança e os educadores dedicados da nossa escola."
-        />
-        <div className="container mx-auto px-4 pb-12">
-          {director && (
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-                Diretoria
-              </h2>
-              <AnimatedCard>
-                <div
-                  onClick={() => setSelectedProfile(director)}
-                  className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-2xl text-center hover:shadow-lg hover:-translate-y-2 transition-all duration-300 cursor-pointer border-t-4 border-[#4455a3]"
-                >
-                  <img
-                    src={`${API_URL}${director.photo}`}
-                    alt={director.name}
-                    className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-[#fcc841] object-cover"
-                  />
-                  <h3 className="text-2xl font-semibold text-gray-900">
-                    {director.name}
-                  </h3>
-                  <p className="text-[#4455a3] font-bold text-lg mt-1">
-                    {director.role}
-                  </p>
-                </div>
-              </AnimatedCard>
-            </div>
-          )}
-          <div>
-            <h2 className="text-3xl font-bold text-center text-gray-800 mb-8 pt-8 border-t">
-              Corpo Docente
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-              {teachers.map((teacher) => (
-                <AnimatedCard key={teacher._id}>
-                  <div
-                    onClick={() => setSelectedProfile(teacher)}
-                    className="bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer h-full"
-                  >
-                    <img
-                      src={`${API_URL}${teacher.photo}`}
-                      alt={teacher.name}
-                      className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-[#4455a3]/50 object-cover"
-                    />
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      {teacher.name}
-                    </h3>
-                    <p className="text-[#4455a3] text-sm">
-                      {teacher.subjects.join(", ")}
-                    </p>
-                  </div>
-                </AnimatedCard>
-              ))}
-            </div>
-          </div>
-          {selectedProfile && (
-            <div
-              className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
-              onClick={() => setSelectedProfile(null)}
-            >
-              <div
-                className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 relative"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  onClick={() => setSelectedProfile(null)}
-                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl"
-                >
-                  &times;
-                </button>
-                <div className="text-center">
-                  <img
-                    src={`${API_URL}${selectedProfile.photo}`}
-                    alt={selectedProfile.name}
-                    className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-[#4455a3] object-cover"
-                  />
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {selectedProfile.name}
-                  </h2>
-                  <p className="text-[#4455a3] font-semibold mt-1">
-                    {selectedProfile.role ||
-                      selectedProfile.subjects.join(" / ")}
-                  </p>
-                  <p className="text-gray-600 mt-6 text-left leading-relaxed">
-                    {selectedProfile.bio}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </PageWrapper>
-    );
-  };
-  const HistoryPage = () => (
-    <PageWrapper>
-      <PageTitle
-        title="Nossa História"
-        subtitle="Uma jornada de dedicação, crescimento e sucesso."
-      />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 relative before:content-[''] before:absolute before:left-1/2 before:top-0 before:h-full before:w-1 before:bg-[#4455a3]/30 before:-translate-x-1/2">
-        {history.map((item, index) => (
-          <div
-            key={item._id}
-            className={`flex items-center w-full mb-8 ${
-              index % 2 === 0 ? "justify-start" : "justify-end"
-            }`}
-          >
-            <div
-              className={`w-1/2 ${
-                index % 2 === 0 ? "pr-8 text-right" : "pl-8 text-left"
-              }`}
-            >
-              <AnimatedCard>
-                <div className="bg-white p-6 rounded-lg shadow-xl border-t-4 border-[#4455a3]">
-                  <p className="text-[#4455a3] font-bold text-lg mb-1">
-                    {item.year}
-                  </p>
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">
-                    {item.title}
-                  </h3>
-                  <p className="text-gray-600">{item.description}</p>
-                </div>
-              </AnimatedCard>
-            </div>
-          </div>
-        ))}
-      </div>
-    </PageWrapper>
-  );
-  const EventsPage = () => (
-    <PageWrapper>
-      <PageTitle
-        title="Calendário de Eventos"
-        subtitle="Fique por dentro de tudo que acontece na nossa escola."
-      />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {events.map((event) => (
-          <AnimatedCard key={event._id}>
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col">
-              <div className="bg-[#4455a3] text-white p-4 text-center">
-                <p className="text-4xl font-bold">
-                  {new Date(event.date).toLocaleDateString("pt-BR", {
-                    day: "2-digit",
-                    timeZone: "UTC",
-                  })}
-                </p>
-                <p className="font-semibold">
-                  {new Date(event.date).toLocaleDateString("pt-BR", {
-                    month: "long",
-                    year: "numeric",
-                    timeZone: "UTC",
-                  })}
-                </p>
-              </div>
-              <div className="p-6 flex-grow">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  {event.title}
-                </h3>
-                <p className="text-gray-600">{event.description}</p>
-              </div>
-            </div>
-          </AnimatedCard>
-        ))}
-      </div>
-    </PageWrapper>
-  );
-  const GalleryPage = () => {
-    const [selectedImage, setSelectedImage] = useState(null);
-    return (
-      <PageWrapper>
-        <PageTitle
-          title="Galeria de Momentos"
-          subtitle="Reviva os melhores momentos da nossa comunidade escolar."
-        />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {gallery.map((image, index) => (
-              <AnimatedCard
-                key={image._id}
-                style={{ animationDelay: `${index * 100}ms` }}
-                className="h-full"
-              >
-                <div
-                  onClick={() => setSelectedImage(image)}
-                  className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer group aspect-w-1 aspect-h-1"
-                >
-                  <img
-                    src={`${API_URL}${image.url}`}
-                    alt={image.caption}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-white text-sm font-semibold transform translate-y-4 group-hover:translate-y-0 transition-transform">
-                      {image.caption}
-                    </p>
-                  </div>
-                </div>
-              </AnimatedCard>
-            ))}
-          </div>
-        </div>
-        {selectedImage && (
-          <div
-            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
-            onClick={() => setSelectedImage(null)}
-          >
-            <div className="relative">
-              <img
-                src={`${API_URL}${selectedImage.url}`}
-                alt={selectedImage.caption}
-                className="max-h-[90vh] max-w-[90vw] rounded-lg shadow-2xl"
-              />
-              <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-lg bg-black/50 px-4 py-2 rounded-lg">
-                {selectedImage.caption}
-              </p>
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute -top-3 -right-3 text-white bg-[#ec9c30] rounded-full p-1 shadow-lg hover:scale-110 transition-transform"
-              >
-                <X size={20} />
-              </button>
-            </div>
-          </div>
-        )}
-      </PageWrapper>
-    );
-  };
-  const NewsDetailPage = ({ article, onBack }) => (
-    <PageWrapper>
-      <div className="container mx-auto max-w-4xl py-12 px-4">
-        <button
-          onClick={onBack}
-          className="mb-8 flex items-center font-semibold text-[#4455a3] hover:opacity-80 transition-all"
-        >
-          <ArrowLeft size={18} className="mr-2" />
-          Voltar para todas as notícias
-        </button>
-        <img
-          src={`${API_URL}${article.image}`}
-          alt={article.title}
-          className="w-full h-auto max-h-[500px] object-cover rounded-lg shadow-2xl mb-8"
-        />
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
-          {article.title}
-        </h1>
-        <p className="text-gray-500 mb-8">
-          {new Date(article.date).toLocaleDateString("pt-BR", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            timeZone: "UTC",
-          })}
-        </p>
-        <div className="prose lg:prose-xl max-w-none">
-          <p>{article.content}</p>
-        </div>
-      </div>
-    </PageWrapper>
-  );
-  const RegisterPage = () => {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-
-    const handleRegisterSubmit = async (e) => {
-      e.preventDefault();
-      if (password !== confirmPassword) {
-        showNotification("As senhas não coincidem.", "error");
-        return;
-      }
-      try {
-        await apiService.post("/api/auth/public-register", {
-          name,
-          email,
-          password,
-        });
-        showNotification(
-          "Conta criada com sucesso! Faça login para continuar.",
-          "success"
-        );
-        navigate("login");
-      } catch (error) {
-        showNotification(error.message, "error");
-      }
-    };
-
-    return (
-      <PageWrapper>
-        <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-2xl">
-            <div>
-              <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Criar nova conta
-              </h2>
-              <p className="mt-2 text-center text-sm text-gray-600">
-                Ou{" "}
-                <button
-                  onClick={() => navigate("login")}
-                  className="font-medium text-[#4455a3] hover:opacity-80"
-                >
-                  aceda à sua conta existente
-                </button>
-              </p>
-            </div>
-            <form className="mt-8 space-y-6" onSubmit={handleRegisterSubmit}>
-              <input
-                type="text"
-                placeholder="Nome Completo"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-3 border bg-gray-50 rounded-md focus:ring-[#4455a3] focus:border-[#4455a3]"
-                required
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border bg-gray-50 rounded-md focus:ring-[#4455a3] focus:border-[#4455a3]"
-                required
-              />
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 border bg-gray-50 rounded-md focus:ring-[#4455a3] focus:border-[#4455a3]"
-                  placeholder="Senha"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
-                >
-                  {showPassword ? (
-                    <Eye className="h-5 w-5 text-gray-500" />
-                  ) : (
-                    <EyeOff className="h-5 w-5 text-gray-500" />
-                  )}
-                </button>
-              </div>
-              <input
-                type="password"
-                placeholder="Confirmar Senha"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full p-3 border bg-gray-50 rounded-md focus:ring-[#4455a3] focus:border-[#4455a3]"
-                required
-              />
-
-              <div>
-                <button
-                  type="submit"
-                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#4455a3] hover:opacity-90"
-                >
-                  <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                    <UserPlus className="h-5 w-5 text-[#fcc841]" />
-                  </span>
-                  Registar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </PageWrapper>
-    );
-  };
-
-  const LoginPage = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(true);
-    const handleLoginSubmit = async (e) => {
-      e.preventDefault();
-      try {
-        await handleLogin(email, password, rememberMe);
-      } catch (error) {
-        showNotification(error.message, "error");
-      }
-    };
-    return (
-      <PageWrapper>
-        <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-2xl">
-            <div>
-              <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Área de Gerenciamento
-              </h2>
-              <p className="mt-2 text-center text-sm text-gray-600">
-                Faça login para continuar
-              </p>
-            </div>
-            <form className="mt-8 space-y-6" onSubmit={handleLoginSubmit}>
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border bg-gray-50 rounded-md focus:ring-[#4455a3] focus:border-[#4455a3]"
-                required
-              />
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 border bg-gray-50 rounded-md focus:ring-[#4455a3] focus:border-[#4455a3]"
-                  placeholder="Senha"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
-                >
-                  {showPassword ? (
-                    <Eye className="h-5 w-5 text-gray-500" />
-                  ) : (
-                    <EyeOff className="h-5 w-5 text-gray-500" />
-                  )}
-                </button>
-              </div>
-              <div className="flex items-center justify-between">
-                <label className="flex items-center cursor-pointer">
-                  <span className="mr-3 text-sm font-medium text-gray-900">
-                    Lembrar de mim
-                  </span>
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="sr-only"
-                    />
-                    <div
-                      className={`block w-10 h-6 rounded-full ${
-                        rememberMe ? "bg-[#4455a3]" : "bg-gray-200"
-                      }`}
-                    ></div>
-                    <div
-                      className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
-                        rememberMe ? "translate-x-full" : ""
-                      }`}
-                    ></div>
-                  </div>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => navigate("forgot-password")}
-                  className="text-sm font-medium text-[#4455a3] hover:opacity-80"
-                >
-                  Esqueci a senha?
-                </button>
-              </div>
-              <div>
-                <button
-                  type="submit"
-                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#4455a3] hover:opacity-90"
-                >
-                  <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                    <Lock className="h-5 w-5 text-[#fcc841]" />
-                  </span>
-                  Entrar
-                </button>
-              </div>
-              <p className="mt-2 text-center text-sm text-gray-600">
-                Não tem uma conta?{" "}
-                <button
-                  onClick={() => navigate("register")}
-                  className="font-medium text-[#4455a3] hover:opacity-80"
-                >
-                  Crie uma aqui
-                </button>
-              </p>
-            </form>
-          </div>
-        </div>
-      </PageWrapper>
-    );
-  };
-  const ForgotPasswordPage = () => {
-    const [email, setEmail] = useState("");
-    const handleForgotPassword = async (e) => {
-      e.preventDefault();
-      try {
-        const { msg } = await apiService.post("/api/auth/forgot-password", {
-          email,
-        });
-        showNotification(msg, "info");
-        navigate("login");
-      } catch (error) {
-        showNotification(error.message, "error");
-      }
-    };
-    return (
-      <PageWrapper>
-        <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-2xl">
-            <div>
-              <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Recuperar Senha
-              </h2>
-              <p className="mt-2 text-center text-sm text-gray-600">
-                Insira o seu e-mail para receber o link de recuperação.
-              </p>
-            </div>
-            <form className="mt-8 space-y-6" onSubmit={handleForgotPassword}>
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border bg-gray-50 rounded-md focus:ring-[#4455a3] focus:border-[#4455a3]"
-                required
-              />
-              <div>
-                <button
-                  type="submit"
-                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#4455a3] hover:opacity-90"
-                >
-                  <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                    <MailQuestion className="h-5 w-5 text-[#fcc841]" />
-                  </span>
-                  Enviar Link de Recuperação
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </PageWrapper>
-    );
-  };
-  const ResetPasswordPage = ({ token }) => {
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const handleResetPassword = async (e) => {
-      e.preventDefault();
-      if (password !== confirmPassword) {
-        showNotification("As senhas não coincidem.", "error");
-        return;
-      }
-      try {
-        const { msg } = await apiService.put(
-          `/api/auth/reset-password/${token}`,
-          { password }
-        );
-        showNotification(msg, "success");
-        navigate("login");
-      } catch (error) {
-        showNotification(error.message, "error");
-      }
-    };
-    return (
-      <PageWrapper>
-        <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-2xl">
-            <div>
-              <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Redefinir Nova Senha
-              </h2>
-            </div>
-            <form className="mt-8 space-y-6" onSubmit={handleResetPassword}>
-              <input
-                type="password"
-                placeholder="Nova Senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 border bg-gray-50 rounded-md"
-                required
-              />
-              <input
-                type="password"
-                placeholder="Confirmar Nova Senha"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full p-3 border bg-gray-50 rounded-md"
-                required
-              />
-              <div>
-                <button
-                  type="submit"
-                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#4455a3] hover:opacity-90"
-                >
-                  Redefinir Senha
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </PageWrapper>
-    );
-  };
-  const NotFoundPage = ({ message }) => (
-    <PageWrapper>
-      <div className="flex flex-col items-center justify-center text-center py-20 px-4">
-        <div className="p-6 bg-red-100 rounded-full mb-6">
-          <ServerCrash className="h-16 w-16 text-red-500" />
-        </div>
-        <h1 className="text-6xl font-extrabold text-gray-800">404</h1>
-        <h2 className="text-2xl font-semibold text-gray-700 mt-2">
-          Página Não Encontrada
-        </h2>
-        <p className="text-gray-500 mt-4 max-w-md">
-          {message ||
-            "Ups! Parece que o link que você seguiu está quebrado ou a página foi removida."}
-        </p>
-        <button
-          onClick={() => navigate("home")}
-          className="mt-8 px-6 py-3 bg-[#4455a3] text-white font-semibold rounded-lg shadow-md hover:opacity-90 transition-all duration-300"
-        >
-          Voltar para a Página Inicial
-        </button>
-      </div>
-    </PageWrapper>
-  );
-  const NoticesPage = () => {
-    const cardColors = [
-      "bg-[#fcc841]/30",
-      "bg-[#4455a3]/20",
-      "bg-[#ec9c30]/20",
-    ];
-    return (
-      <PageWrapper>
-        <PageTitle
-          title="Recados do Dia"
-          subtitle="Avisos e comunicados importantes para a comunidade escolar."
-        />
-        <div className="container mx-auto px-4 pb-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {notices.length > 0 ? (
-              notices.map((notice, index) => (
-                <AnimatedCard
-                  key={notice._id}
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div
-                    className={`p-6 rounded-lg shadow-lg h-full flex flex-col transform rotate-${
-                      (index % 4) - 1.5
-                    } hover:scale-105 hover:rotate-0 transition-transform duration-300 ${
-                      cardColors[index % cardColors.length]
-                    }`}
-                  >
-                    <p className="text-gray-800 flex-grow mb-4 whitespace-pre-wrap break-words">
-                      {notice.content}
-                    </p>
-                    <div className="text-sm text-gray-600 border-t border-gray-400/50 pt-2">
-                      <p className="font-semibold">{notice.author}</p>
-                      <p className="text-xs">
-                        {new Date(notice.createdAt).toLocaleString("pt-BR", {
-                          dateStyle: "short",
-                          timeStyle: "short",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                </AnimatedCard>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-16">
-                <Megaphone className="h-16 w-16 text-gray-300 mx-auto" />
-                <p className="mt-4 text-xl text-gray-500">
-                  Nenhum recado para hoje.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </PageWrapper>
-    );
   };
 
   return (
@@ -2842,9 +486,30 @@ export default function App() {
         onLogin={() => navigate("login")}
         isLoggedIn={isLoggedIn}
         onLogout={handleLogout}
+        onGlobalSearch={handleGlobalSearch}
       />
-      <main className="flex-grow">{renderPage()}</main>
+      <main className="flex-grow">
+        {globalLoading && <LoadingSpinner message="A carregar dados..." size="lg" />}
+        {/* LocalizationProvider deve envolver os componentes que usam DatePicker */}
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+          {renderPage()}
+        </LocalizationProvider>
+      </main>
       <Footer />
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        message={confirmModalMessage}
+        onConfirm={() => confirmModalCallback(true)}
+        onCancel={() => confirmModalCallback(false)}
+      />
+      <Modal
+        isOpen={showGenericModal}
+        onClose={closeGenericModal}
+        title={genericModalTitle}
+      >
+        {genericModalContent}
+      </Modal>
+      <ScrollToTopButton />
     </div>
   );
 }
