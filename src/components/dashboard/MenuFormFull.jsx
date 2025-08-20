@@ -13,7 +13,8 @@ const MenuFormFull = ({ setMenuUrl, showNotification, apiService, fetchAllData, 
       const formData = new FormData();
       formData.append("file", file); // 'file' matches the Multer field name
       try {
-        const response = await apiService.post("/api/menu", formData); // Post directly to /api/menu
+        // Alterado para usar apiService.postForm para enviar FormData corretamente
+        const response = await apiService.postForm("/api/menu", formData);
         setMenuUrl(response.fileUrl); // Update state with the new URL from backend
         showNotification("Cardápio atualizado!", "success");
         setFile(null);
