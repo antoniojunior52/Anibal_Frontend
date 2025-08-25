@@ -3,7 +3,7 @@ const API_URL = "http://localhost:5000";
 const apiService = {
   get: async (endpoint) => {
     const res = await fetch(`${API_URL}${endpoint}`);
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    if (!res.ok) throw new Error(`Erro HTTP! Status: ${res.status}`);
     return res.json();
   },
   requestWithBody: async (endpoint, method, data, isFormData = false) => {
@@ -23,7 +23,7 @@ const apiService = {
     });
     const responseData = await res.json();
     if (!res.ok) {
-      throw new Error(responseData.msg || `HTTP error! status: ${res.status}`);
+      throw new Error(responseData.msg || `Erro HTTP! Status: ${res.status}`);
     }
     return responseData;
   },

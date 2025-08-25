@@ -1,6 +1,5 @@
-// App.js
-import { useState, useEffect, useCallback } from "react";
-import { ArrowLeft } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { ArrowLeft, Bot } from "lucide-react";
 
 // API Service
 import apiService from "./apiService";
@@ -19,16 +18,11 @@ import ConfirmationModal from "./components/ui/ConfirmationModal";
 import LoadingSpinner from "./components/ui/LoadingSpinner";
 import Modal from "./components/ui/Modal";
 import ScrollToTopButton from "./components/ui/ScrollToTopButton";
+import AIChatbot from "./components/ui/AIChatbot";
 
-// REMOVER: Importar o CSS do react-datepicker e o seu CSS personalizado
-// import "react-datepicker/dist/react-datepicker.css";
-// import "./styles/datepicker-custom.css";
-
-// IMPORTAR: MUI LocalizationProvider e AdapterDateFns para o DatePicker
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ptBR } from 'date-fns/locale'; // Importar o locale português do date-fns
-
+import { ptBR } from 'date-fns/locale';
 
 // Page Components
 import HomePage from "./components/pages/HomePage";
@@ -44,8 +38,9 @@ import LoginPage from "./components/pages/LoginPage";
 import RegisterPage from "./components/pages/RegisterPage";
 import ForgotPasswordPage from "./components/pages/ForgotPasswordPage";
 import ResetPasswordPage from "./components/pages/ResetPasswordPage";
-import NotFoundPage from "./components/pages/NotFoundPage";
+import ErrorPage from "./components/pages/ErrorPage";
 import NoticesPage from "./components/pages/NoticesPage";
+import NotFoundPage from "./components/pages/NotFoundPage";
 
 // Dashboard Components
 import DashboardHome from "./components/dashboard/DashboardHome";
@@ -62,16 +57,15 @@ import UserRegistrationForm from "./components/dashboard/UserRegistrationForm";
 import NoticeFormFull from "./components/dashboard/NoticeFormFull";
 
 
-export const API_URL = "http://localhost:5000"; // Export API_URL for use in other components
+export const API_URL = "http://localhost:5000";
 
 export default function App() {
-  // --- Estados da Aplicação ---
   const [page, setPage] = useState("home");
   const [pagePayload, setPagePayload] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
-  // --- Estados dos Dados ---
   const [news, setNews] = useState([]);
   const [notices, setNotices] = useState([]);
   const [menuUrl, setMenuUrl] = useState("");
@@ -82,43 +76,35 @@ export default function App() {
   const [gallery, setGallery] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // --- Estados para Notificação e Modais ---
   const [notification, setNotification] = useState({ message: "", type: "" });
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmModalMessage, setConfirmModalMessage] = useState("");
   const [confirmModalCallback, setConfirmModalCallback] = useState(null);
   const [globalLoading, setGlobalLoading] = useState(false);
 
-  // Estado para o modal genérico
   const [showGenericModal, setShowGenericModal] = useState(false);
   const [genericModalTitle, setGenericModalTitle] = useState("");
   const [genericModalContent, setGenericModalContent] = useState(null);
 
-  // NOVO ESTADO para controlar se os usuários já foram buscados (para evitar loops)
   const [hasFetchedUsers, setHasFetchedUsers] = useState(false);
 
-
-  // Função para abrir o modal genérico
   const openGenericModal = useCallback((title, content) => {
     setGenericModalTitle(title);
     setGenericModalContent(content);
     setShowGenericModal(true);
   }, []);
 
-  // Função para fechar o modal genérico
   const closeGenericModal = useCallback(() => {
     setShowGenericModal(false);
     setGenericModalTitle("");
     setGenericModalContent(null);
   }, []);
 
-
   const showNotification = useCallback((message, type) => {
     setNotification({ message, type });
     setTimeout(() => setNotification({ message: "", type: "" }), 4000);
   }, []);
 
-  // --- Funções de Carregamento de Dados ---
   const fetchAllData = useCallback(async () => {
     setGlobalLoading(true);
     try {
@@ -175,29 +161,23 @@ export default function App() {
     fetchAllData();
   }, [fetchAllData]);
 
-  // EFEITO CORRIGIDO PARA EVITAR LOOP INFINITO
   useEffect(() => {
-    // Apenas busca usuários se o usuário logado for admin e ainda não tivermos buscado
     if (user?.isAdmin && !hasFetchedUsers) {
       fetchUsers();
-      setHasFetchedUsers(true); // Marca como buscado para evitar chamadas repetidas
+      setHasFetchedUsers(true);
     } else if (!user?.isAdmin && hasFetchedUsers) {
-      // Se o usuário não for mais admin (ex: logout ou permissão alterada), limpa a lista de usuários
-      // e reseta a flag para uma futura sessão de admin
       setUsers([]);
       setHasFetchedUsers(false);
     }
-  }, [user?.isAdmin, fetchUsers, hasFetchedUsers]); // Dependências ajustadas para evitar loop
+  }, [user?.isAdmin, fetchUsers, hasFetchedUsers]);
 
-  // --- Gestão de Autenticação e Navegação ---
   const navigate = useCallback((targetPage, payload = null) => {
     window.scrollTo(0, 0);
     setPage(targetPage);
     setPagePayload(payload);
   }, []);
 
-  // Função showConfirm que usa o modal personalizado
-  const showConfirm = (message) => {
+  const showConfirm = useCallback((message) => {
     return new Promise((resolve) => {
       setConfirmModalMessage(message);
       setConfirmModalCallback(() => (confirmed) => {
@@ -206,7 +186,7 @@ export default function App() {
       });
       setShowConfirmModal(true);
     });
-  };
+  }, []);
 
   const handleLogout = useCallback(
     async (message, type = "info") => {
@@ -222,9 +202,9 @@ export default function App() {
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("user");
       setIsLoggedIn(false);
-      setUser(null); // Define user como null no logout
-      setUsers([]); // Limpa a lista de usuários no logout
-      setHasFetchedUsers(false); // Reseta a flag de usuários buscados
+      setUser(null);
+      setUsers([]);
+      setHasFetchedUsers(false);
       navigate("home");
       if (message) {
         showNotification(message, type);
@@ -245,7 +225,6 @@ export default function App() {
       storage.setItem("token", token);
       storage.setItem("user", JSON.stringify(userData));
 
-      // Atualiza o user, mas o useEffect de fetchUsers agora controla a busca
       setUser(userData);
       setIsLoggedIn(true);
       navigate("dashboard");
@@ -266,7 +245,7 @@ export default function App() {
     try {
       await apiService.post("/api/auth/register-by-admin", newUserData);
       showNotification("Utilizador criado com sucesso!", "success");
-      fetchUsers(); // Chama fetchUsers para atualizar a lista após o registro
+      fetchUsers();
     } catch (error) {
       showNotification(error.message, "error");
       throw error;
@@ -285,7 +264,6 @@ export default function App() {
         : sessionStorage;
       storage.setItem("user", JSON.stringify(updatedUser));
 
-      // Atualiza o user, mas o useEffect de fetchUsers agora controla a busca
       setUser(updatedUser);
       showNotification("Perfil atualizado com sucesso!", "success");
     } catch (error) {
@@ -309,7 +287,6 @@ export default function App() {
     }
   };
 
-  // EFEITO CORRIGIDO PARA CARREGAMENTO INICIAL DO USUÁRIO
   useEffect(() => {
     const token = localStorage.getItem("token");
     const sessionToken = sessionStorage.getItem("token");
@@ -323,31 +300,27 @@ export default function App() {
         const now = new Date().getTime();
         const twentyFourHours = 24 * 60 * 60 * 1000;
 
-        // Verifica a expiração apenas se o token for do localStorage (lembrar de mim)
         if (token && loginTimestamp && (now - parseInt(loginTimestamp, 10) > twentyFourHours)) {
           handleLogout(
             "Sua sessão expirou por segurança. Por favor, faça login novamente.",
             "info"
           );
         } else {
-          // Apenas atualiza o estado 'user' se ele for diferente do atual para evitar re-renders desnecessários
-          if (!user || user.id !== parsedUser.id) { // Comparar por ID para evitar re-render por nova referência
+          if (!user || user.id !== parsedUser.id) {
             setUser(parsedUser);
           }
           setIsLoggedIn(true);
         }
       } else {
-        // Se não há usuário armazenado mas há token, algo está errado, faz logout
         handleLogout("Sessão inválida. Por favor, faça login novamente.", "error");
       }
     } else {
       setIsLoggedIn(false);
       setUser(null);
-      setUsers([]); // Garante que a lista de usuários está vazia se não houver token
-      setHasFetchedUsers(false); // Reseta a flag
+      setUsers([]);
+      setHasFetchedUsers(false);
     }
-  }, [handleLogout, user]); // Adiciona 'user' como dependência para que a comparação funcione corretamente
-
+  }, [handleLogout, user]);
 
   useEffect(() => {
     const path = window.location.pathname;
@@ -390,7 +363,7 @@ export default function App() {
       }
     };
   
-  const handleDelete = (endpoint, fetchFunction) => async (id) => {
+  const handleDelete = useCallback((endpoint, fetchFunction) => async (id) => {
     const confirmed = await showConfirm(
       "Tem a certeza que quer apagar este item?"
     );
@@ -408,17 +381,11 @@ export default function App() {
     } else {
       showNotification("Remoção cancelada.", "info");
     }
-  };
+  }, [showConfirm, showNotification]);
 
-  // Função para pesquisa global (exemplo)
   const handleGlobalSearch = useCallback((searchTerm) => {
     showNotification(`Pesquisa global por: "${searchTerm}" (Funcionalidade a ser implementada)`, "info");
-    // Aqui você implementaria a lógica de pesquisa,
-    // como navegar para uma página de resultados de pesquisa
-    // ou filtrar dados em tempo real se a página atual for uma lista.
-    // Exemplo: navigate('search-results', { query: searchTerm });
   }, [showNotification]);
-
 
   const renderPage = () => {
     if (!isLoggedIn && page === "dashboard") {
@@ -432,7 +399,7 @@ export default function App() {
       case "notices": return <NoticesPage notices={notices} />;
       case "news-detail":
         const article = news.find((n) => n._id === pagePayload);
-        return article ? (<NewsDetailPage article={article} onBack={() => navigate("news")} />) : (<NotFoundPage message="A notícia que você procura não foi encontrada." navigate={navigate} />);
+        return article ? (<NewsDetailPage article={article} onBack={() => navigate("news")} />) : (<ErrorPage statusCode={404} navigate={navigate} />);
       case "menu": return <MenuPage menuUrl={menuUrl} />;
       case "schedules": return <SchedulesPage schedules={schedules} />;
       case "teachers": return <TeachersPage team={team} />;
@@ -470,7 +437,7 @@ export default function App() {
             <div className="container mx-auto px-4 pb-12">{dashboardContent}</div>
           </PageWrapper>
         );
-      default: return <NotFoundPage navigate={navigate} />;
+      default: return <ErrorPage statusCode={404} navigate={navigate} />;
     }
   };
 
@@ -490,7 +457,6 @@ export default function App() {
       />
       <main className="flex-grow">
         {globalLoading && <LoadingSpinner message="A carregar dados..." size="lg" />}
-        {/* LocalizationProvider deve envolver os componentes que usam DatePicker */}
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
           {renderPage()}
         </LocalizationProvider>
@@ -507,8 +473,18 @@ export default function App() {
         onClose={closeGenericModal}
         title={genericModalTitle}
       >
-        {genericModalContent}
+        null
       </Modal>
+      {isChatbotOpen && <AIChatbot onClose={() => setIsChatbotOpen(false)} />}
+      {!isChatbotOpen && (
+        <button
+          onClick={() => setIsChatbotOpen(true)}
+          className="fixed bottom-6 left-6 z-50 p-4 rounded-full bg-[#4455a3] text-white shadow-lg hover:bg-[#3a488a] transition-all duration-300 transform hover:-translate-y-1"
+          aria-label="Abrir assistente virtual"
+        >
+          <Bot size={24} />
+        </button>
+      )}
       <ScrollToTopButton />
     </div>
   );
