@@ -1,4 +1,3 @@
-// components/ui/LoadingSpinner.jsx
 import React from 'react';
 
 const LoadingSpinner = ({ message = "Carregando...", size = "md" }) => {
@@ -24,12 +23,12 @@ const LoadingSpinner = ({ message = "Carregando...", size = "md" }) => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center p-4" role="status" aria-live="polite"> {/* Adicionado para acessibilidade */}
+    <div className="flex flex-col items-center justify-center p-4" role="status" aria-live="polite">
       <div
         className={`animate-spin rounded-full border-b-2 border-blue-500 ${spinnerSizeClass}`}
-        aria-hidden="true" // Esconder do leitor de tela, pois a mensagem já indica o status
+        aria-hidden="true"
       >
-        <span className="sr-only">Carregando...</span> {/* Texto para leitores de tela */}
+        <span className="sr-only">Carregando...</span>
       </div>
       {message && (
         <p className={`mt-3 text-gray-600 ${textSizeClass}`}>

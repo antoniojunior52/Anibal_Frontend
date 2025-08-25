@@ -1,10 +1,8 @@
-// components/ui/Pagination.jsx
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   const pageNumbers = [];
-  // Limitar o número de botões de página visíveis para não sobrecarregar a UI
   const maxPageButtons = 5;
   let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
   let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
@@ -18,14 +16,14 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   }
 
   return (
-    <nav className="flex justify-center items-center space-x-2 mt-8" aria-label="Navegação de Página"> {/* Adicionado para acessibilidade */}
+    <nav className="flex justify-center items-center space-x-2 mt-8" aria-label="Navegação de Página">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="p-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
         aria-label="Página anterior"
       >
-        <ChevronLeft size={20} aria-hidden="true" /> {/* Ícone decorativo */}
+        <ChevronLeft size={20} aria-hidden="true" />
       </button>
 
       {startPage > 1 && (
@@ -33,7 +31,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           <button
             onClick={() => onPageChange(1)}
             className="px-4 py-2 rounded-md font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-200"
-            aria-label="Ir para a página 1" // Rótulo para acessibilidade
+            aria-label="Ir para a página 1"
           >
             1
           </button>
@@ -50,8 +48,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
               ? 'bg-blue-500 text-white shadow-md'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-          aria-current={currentPage === number ? 'page' : undefined} // Indica a página atual
-          aria-label={`Ir para a página ${number}`} // Rótulo para acessibilidade
+          aria-current={currentPage === number ? 'page' : undefined}
+          aria-label={`Ir para a página ${number}`}
         >
           {number}
         </button>
@@ -63,7 +61,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           <button
             onClick={() => onPageChange(totalPages)}
             className="px-4 py-2 rounded-md font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-200"
-            aria-label={`Ir para a última página, página ${totalPages}`} // Rótulo para acessibilidade
+            aria-label={`Ir para a última página, página ${totalPages}`}
           >
             {totalPages}
           </button>
@@ -76,7 +74,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
         className="p-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
         aria-label="Próxima página"
       >
-        <ChevronRight size={20} aria-hidden="true" /> {/* Ícone decorativo */}
+        <ChevronRight size={20} aria-hidden="true" />
       </button>
     </nav>
   );

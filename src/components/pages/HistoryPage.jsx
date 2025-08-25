@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import PageWrapper from "../ui/PageWrapper";
 import PageTitle from "../ui/PageTitle";
 import AnimatedCard from "../ui/AnimatedCard";
-import Pagination from "../ui/Pagination"; // Importar o componente de Paginação
+import Pagination from "../ui/Pagination";
 
 const HistoryPage = ({ history }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4; // Definir quantos itens do histórico por página
+  const itemsPerPage = 4;
 
-  // Calcular itens para a página atual
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentHistoryItems = history.slice(indexOfFirstItem, indexOfLastItem);
@@ -24,19 +23,19 @@ const HistoryPage = ({ history }) => {
         title="Nossa História"
         subtitle="Uma jornada de dedicação, crescimento e sucesso."
       />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 relative before:content-[''] before:absolute before:left-1/2 before:top-0 before:h-full before:w-1 before:bg-[#4455a3]/30 before:-translate-x-1/2" role="list"> {/* Adicionado role="list" */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 relative before:content-[''] before:absolute before:left-1/2 before:top-0 before:h-full before:w-1 before:bg-[#4455a3]/30 before:-translate-x-1/2" role="list">
         {currentHistoryItems.length > 0 ? (
           currentHistoryItems.map((item, index) => (
             <div
               key={item._id}
-              className={`flex items-center w-full mb-8 ${
-                index % 2 === 0 ? "justify-start" : "justify-end"
+              className={`flex items-center w-full mb-8 flex-col sm:flex-row ${
+                index % 2 === 0 ? "sm:justify-start" : "sm:justify-end"
               }`}
-              role="listitem" // Adicionado role="listitem"
+              role="listitem"
             >
               <div
-                className={`w-1/2 ${
-                  index % 2 === 0 ? "pr-8 text-right" : "pl-8 text-left"
+                className={`w-full sm:w-1/2 ${
+                  index % 2 === 0 ? "sm:pr-8 sm:text-right" : "sm:pl-8 sm:text-left"
                 }`}
               >
                 <AnimatedCard>

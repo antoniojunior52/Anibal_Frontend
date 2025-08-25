@@ -18,22 +18,23 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
           <div
             className="flex items-center space-x-3 cursor-pointer"
             onClick={() => onNavigate("home")}
-            role="link" // Adicionar role para acessibilidade
-            tabIndex="0" // Tornar div focável
-            aria-label="Ir para a página inicial" // Rótulo para leitores de tela
-            onKeyPress={(e) => { if (e.key === 'Enter') onNavigate('home'); }} // Ativar com Enter
+            role="link"
+            tabIndex="0"
+            aria-label="Ir para a página inicial"
+            onKeyPress={(e) => { if (e.key === 'Enter') onNavigate('home'); }}
           >
             <img
               src="./logo.jpg"
-              alt="Logo da Escola E.E Profº Anibal do Prado e Silva" // Alt text descritivo
-              className="rounded-full w-16 h-16 object-cover"
+              alt="Logo da Escola E.E Profº Anibal do Prado e Silva"
+              className="rounded-full w-12 h-12 sm:w-16 sm:h-16 object-cover"
             />
-            <h1 className="text-xl font-bold text-[#4455a3]">
+            <h1 className="text-sm sm:text-xl font-bold text-[#4455a3]">
               E.E Profº Anibal do Prado e Silva
             </h1>
           </div>
 
-          <nav className="hidden md:flex items-center space-x-1" aria-label="Navegação Principal">
+          {/* Navegação principal - visível a partir de telas 'lg' */}
+          <nav className="hidden lg:flex items-center space-x-1" aria-label="Navegação Principal">
             <NavItem onClick={() => onNavigate("news")}>Notícias</NavItem>
             <NavItem onClick={() => onNavigate("notices")}>Recados</NavItem>
             <NavItem onClick={() => onNavigate("teachers")}>Equipe</NavItem>
@@ -44,20 +45,21 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
             <NavItem onClick={() => onNavigate("menu")}>Cardápio</NavItem>
           </nav>
 
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Botões de login/dashboard - visíveis a partir de telas 'lg' */}
+          <div className="hidden lg:flex items-center space-x-4">
             {isLoggedIn ? (
               <div className="flex items-center space-x-4">
                 <button
                   onClick={() => onNavigate("dashboard")}
                   className="flex items-center space-x-2 bg-[#4455a3] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg"
-                  aria-label="Ir para o Dashboard" // Rótulo para acessibilidade
+                  aria-label="Ir para o Dashboard"
                 >
                   <LayoutDashboard size={18} /> <span>Dashboard</span>
                 </button>
                 <button
                   onClick={() => onLogout("Você saiu da sua conta.", "success")}
                   className="text-gray-600 hover:text-[#4455a3] transition duration-300"
-                  aria-label="Sair da conta" // Rótulo para acessibilidade
+                  aria-label="Sair da conta"
                 >
                   <LogOut size={20} />
                 </button>
@@ -67,7 +69,7 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
                 <button
                   onClick={onLogin}
                   className="flex items-center space-x-2 bg-[#4455a3] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg"
-                  aria-label="Ir para a área restrita" // Rótulo para acessibilidade
+                  aria-label="Ir para a área restrita"
                 >
                   <UserCircle size={18} /> <span>Área Restrita</span>
                 </button>
@@ -75,13 +77,13 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
             )}
           </div>
 
-          {/* Botão de menu mobile */}
-          <div className="md:hidden flex items-center">
+          {/* Botão de menu mobile - visível apenas em telas menores que 'lg' */}
+          <div className="lg:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-[#4455a3] focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
-              aria-expanded={isMenuOpen} // Estado do menu para leitores de tela
-              aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"} // Rótulo dinâmico
+              aria-expanded={isMenuOpen}
+              aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
             >
               <Menu size={28} />
             </button>
@@ -90,7 +92,7 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
       </div>
 
       {isMenuOpen && (
-        <div className="md:hidden bg-white absolute top-20 left-0 w-full shadow-lg z-50" role="menu">
+        <div className="lg:hidden bg-white absolute top-20 left-0 w-full shadow-lg z-50" role="menu">
           <nav className="flex flex-col p-4 space-y-2">
             <MobileNavItem onClick={() => handleMobileNav("news")}>Notícias</MobileNavItem>
             <MobileNavItem onClick={() => handleMobileNav("notices")}>Recados</MobileNavItem>

@@ -2,16 +2,15 @@ import React, { useState } from "react";
 import PageWrapper from "../ui/PageWrapper";
 import PageTitle from "../ui/PageTitle";
 import AnimatedCard from "../ui/AnimatedCard";
-import Pagination from "../ui/Pagination"; // Importar o componente de Paginação
+import Pagination from "../ui/Pagination";
 import { X } from "lucide-react";
 import { API_URL } from "../../App";
 
 const GalleryPage = ({ gallery }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8; // Definir quantas imagens por página
+  const itemsPerPage = 8;
 
-  // Calcular imagens para a página atual
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentGalleryItems = gallery.slice(indexOfFirstItem, indexOfLastItem);
@@ -29,21 +28,21 @@ const GalleryPage = ({ gallery }) => {
       />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {currentGalleryItems.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" role="list"> {/* Adicionado role="list" */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" role="list">
             {currentGalleryItems.map((image, index) => (
               <AnimatedCard
                 key={image._id}
                 style={{ animationDelay: `${index * 100}ms` }}
                 className="h-full"
-                role="listitem" // Adicionado role="listitem"
+                role="listitem"
               >
                 <div
                   onClick={() => setSelectedImage(image)}
                   className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer group aspect-w-1 aspect-h-1"
-                  role="button" // Indica que o div é clicável
-                  tabIndex="0" // Torna o div focável
-                  aria-label={`Ver imagem ${image.caption} em tamanho maior`} // Rótulo para acessibilidade
-                  onKeyPress={(e) => { if (e.key === 'Enter') setSelectedImage(image); }} // Ativar com Enter
+                  role="button"
+                  tabIndex="0"
+                  aria-label={`Ver imagem ${image.caption} em tamanho maior`}
+                  onKeyPress={(e) => { if (e.key === 'Enter') setSelectedImage(image); }}
                 >
                   <img
                     src={`${API_URL}${image.url}`}
@@ -75,9 +74,9 @@ const GalleryPage = ({ gallery }) => {
         <div
           className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setSelectedImage(null)}
-          role="dialog" // Papel ARIA para modal
-          aria-modal="true" // Indica que o conteúdo por trás não é interativo
-          aria-label={`Visualização da imagem: ${selectedImage.caption}`} // Rótulo para leitores de tela
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Visualização da imagem: ${selectedImage.caption}`}
         >
           <div className="relative">
             <img
@@ -92,7 +91,7 @@ const GalleryPage = ({ gallery }) => {
             <button
               onClick={() => setSelectedImage(null)}
               className="absolute -top-3 -right-3 text-white bg-[#ec9c30] rounded-full p-1 shadow-lg hover:scale-110 transition-transform"
-              aria-label="Fechar visualização da imagem" // Rótulo para acessibilidade
+              aria-label="Fechar visualização da imagem"
             >
               <X size={20} />
             </button>

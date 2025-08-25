@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import PageWrapper from "../ui/PageWrapper";
 import PageTitle from "../ui/PageTitle";
 import AnimatedCard from "../ui/AnimatedCard";
-import Pagination from "../ui/Pagination"; // Importar o componente de Paginação
+import Pagination from "../ui/Pagination";
 
 const EventsPage = ({ events }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6; // Definir quantos eventos por página
+  const itemsPerPage = 6;
 
-  // Calcular eventos para a página atual
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentEvents = events.slice(indexOfFirstItem, indexOfLastItem);
@@ -26,9 +25,9 @@ const EventsPage = ({ events }) => {
       />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {currentEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="list"> {/* Adicionado role="list" */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
             {currentEvents.map((event) => (
-              <AnimatedCard key={event._id} role="listitem"> {/* Adicionado role="listitem" */}
+              <AnimatedCard key={event._id} role="listitem">
                 <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col">
                   <div className="bg-[#4455a3] text-white p-4 text-center">
                     <p className="text-4xl font-bold">

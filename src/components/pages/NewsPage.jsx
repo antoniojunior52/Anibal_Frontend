@@ -4,30 +4,21 @@ import PageTitle from "../ui/PageTitle";
 import AnimatedCard from "../ui/AnimatedCard";
 import Pagination from "../ui/Pagination";
 import SearchBar from "../ui/SearchBar";
-// Removido: import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-// Removido: import DatePicker, { registerLocale } from "react-datepicker";
-// Removido: import { pt } from 'date-fns/locale';
-
 import { API_URL } from "../../App";
-
-// Removido: registerLocale('pt', pt);
 
 const NewsPage = ({ news, navigate }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  // filterDate agora será uma string para o input type="date"
   const [filterDate, setFilterDate] = useState("");
 
-  // Filtrar e pesquisar notícias
   const filteredNews = useMemo(() => {
     return news.filter(item => {
       const newsDate = new Date(item.date);
-      newsDate.setHours(0, 0, 0, 0); // Normalizar para comparar apenas a data
+      newsDate.setHours(0, 0, 0, 0);
 
-      // Converter filterDate para um objeto Date para comparação
       const selectedFilterDate = filterDate ? new Date(filterDate) : null;
       if (selectedFilterDate) {
-        selectedFilterDate.setHours(0, 0, 0, 0); // Normalizar para comparar apenas a data
+        selectedFilterDate.setHours(0, 0, 0, 0);
       }
 
       const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -54,7 +45,6 @@ const NewsPage = ({ news, navigate }) => {
     setCurrentPage(1);
   };
 
-  // Handler para o campo de data (agora um input type="date" padrão)
   const handleFilterDateChange = (e) => {
     setFilterDate(e.target.value);
     setCurrentPage(1);
@@ -67,17 +57,14 @@ const NewsPage = ({ news, navigate }) => {
         subtitle="Acompanhe os últimos acontecimentos da nossa nossa comunidade escolar."
       />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        {/* Seção de Filtros - Mais discreta e compacta, com melhor alinhamento */}
         <div className="bg-white p-4 rounded-lg shadow-sm mb-8 border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-700 mb-4 sr-only">Opções de Filtro</h3>
           <div className="flex flex-col md:flex-row md:items-center gap-4">
-            {/* Pesquisa por Título/Conteúdo - Agora instantânea */}
             <div className="flex-1">
               <label htmlFor="search-news-input" className="block text-sm font-medium text-gray-700 mb-1">Pesquisar Notícia</label>
               <SearchBar onSearch={handleSearch} placeholder="Título ou conteúdo..." id="search-news-input" />
             </div>
             
-            {/* Filtro por Data Única usando input type="date" padrão */}
             <div className="md:w-1/3 lg:w-1/4">
               <label htmlFor="filter-date-input" className="block text-sm font-medium text-gray-700 mb-1">Filtrar a partir de</label>
               <input
@@ -87,7 +74,7 @@ const NewsPage = ({ news, navigate }) => {
                 onChange={handleFilterDateChange}
                 className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm
                            focus:outline-none focus:ring-2 focus:ring-[#4455a3] focus:border-transparent
-                           text-gray-800 rounded-full" /* Adicionado rounded-full para consistência */
+                           text-gray-800 rounded-full"
                 aria-label="Filtrar notícias a partir desta data"
               />
             </div>
@@ -95,7 +82,7 @@ const NewsPage = ({ news, navigate }) => {
         </div>
 
         {currentNews.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
             {currentNews.map((item) => (
               <AnimatedCard key={item._id} role="listitem">
                 <div

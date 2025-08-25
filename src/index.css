@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Regras para tornar a tabela mais responsiva */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+  /* Use 'width' para definir o tamanho mínimo e máximo das colunas
+     para evitar a barra de rolagem horizontal */
+  max-width: 150px; /* Altere este valor para o tamanho máximo desejado */
+  white-space: normal; /* Permite a quebra de linha normal */
+}

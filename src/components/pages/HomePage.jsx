@@ -12,7 +12,7 @@ import {
 import PageWrapper from "../ui/PageWrapper";
 import HomeCard from "../ui/HomeCard";
 
-const HomePage = ({ navigate}) => { 
+const HomePage = ({ navigate }) => { 
   return (
     <PageWrapper>
       <div className="relative bg-gradient-to-br from-[#4455a3] to-[#6a79c1] text-white text-center overflow-hidden">
@@ -33,7 +33,7 @@ const HomePage = ({ navigate}) => {
 
       <div className="py-16 bg-gray-100">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <HomeCard icon={<FileText size={40} />} title="Últimas Notícias" description="Fique por dentro dos eventos." onClick={() => navigate("news")} />
             <HomeCard icon={<Megaphone size={40} />} title="Recados do Dia" description="Avisos e comunicados rápidos." onClick={() => navigate("notices")} />
             <HomeCard icon={<Users size={40} />} title="Nossa Equipe" description="Conheça a diretoria e os professores." onClick={() => navigate("teachers")} />
