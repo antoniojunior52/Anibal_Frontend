@@ -38,7 +38,7 @@ const GalleryPage = ({ gallery }) => {
               >
                 <div
                   onClick={() => setSelectedImage(image)}
-                  className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer group aspect-w-1 aspect-h-1"
+                  className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer group aspect-square"
                   role="button"
                   tabIndex="0"
                   aria-label={`Ver imagem ${image.caption} em tamanho maior`}
