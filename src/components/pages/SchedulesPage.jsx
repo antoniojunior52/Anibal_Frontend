@@ -55,8 +55,8 @@ const SchedulesPage = ({ schedules }) => {
                     href={scheduleUrl}
                     download={`${selectedClass}_horario.xlsx`}
                     className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-[#4455a3] shadow-md hover:bg-[#3a488a] transition-all duration-300 transform hover:-translate-y-1"
-                    target="_blank" // Open in new tab
-                    rel="noopener noreferrer" // Security best practice
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     <Download className="mr-2" size={18} />
                     Baixar Horário
@@ -64,7 +64,10 @@ const SchedulesPage = ({ schedules }) => {
                 )}
               </div>
               {scheduleUrl ? (
-                <ExcelViewer fileUrl={scheduleUrl} />
+                // Adicionado div com overflow-x-auto para responsividade
+                <div className="overflow-x-auto">
+                  <ExcelViewer fileUrl={scheduleUrl} />
+                </div>
               ) : (
                 <div className="text-center p-8">
                   <Info className="h-12 w-12 text-gray-400 mx-auto" />
