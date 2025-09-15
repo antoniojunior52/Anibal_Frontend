@@ -19,6 +19,7 @@ import LoadingSpinner from "./components/ui/LoadingSpinner";
 import Modal from "./components/ui/Modal";
 import ScrollToTopButton from "./components/ui/ScrollToTopButton";
 import AIChatbot from "./components/ui/AIChatbot";
+import AccessibilityMenu from "./components/ui/AccessibilityMenu.jsx";// 1. IMPORTAR O NOVO COMPONENTE
 
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -87,6 +88,40 @@ export default function App() {
   const [genericModalContent, setGenericModalContent] = useState(null);
 
   const [hasFetchedUsers, setHasFetchedUsers] = useState(false);
+
+  // 2. ADICIONAR ESTADOS E LÓGICA DE ACESSIBILIDADE
+  const [isHighContrast, setIsHighContrast] = useState(false);
+  const [fontSize, setFontSize] = useState(100); // 100% é o tamanho base
+
+  useEffect(() => {
+    // Efeito para o alto contraste
+    if (isHighContrast) {
+      document.body.classList.add('high-contrast');
+    } else {
+      document.body.classList.remove('high-contrast');
+    }
+    // Salva a preferência do usuário no localStorage
+    localStorage.setItem('highContrast', isHighContrast);
+  }, [isHighContrast]);
+
+  useEffect(() => {
+    // Efeito para o tamanho da fonte
+    document.documentElement.style.fontSize = `${fontSize}%`;
+    localStorage.setItem('fontSize', fontSize);
+  }, [fontSize]);
+
+  useEffect(() => {
+    // Carrega as preferências do usuário ao iniciar a aplicação
+    const savedContrast = localStorage.getItem('highContrast') === 'true';
+    const savedFontSize = parseInt(localStorage.getItem('fontSize'), 10);
+    if (savedContrast) setIsHighContrast(true);
+    if (!isNaN(savedFontSize)) setFontSize(savedFontSize);
+  }, []);
+
+  const toggleContrast = () => setIsHighContrast(prev => !prev);
+  const increaseFontSize = () => setFontSize(prev => Math.min(prev + 10, 150)); // Limite de 150%
+  const decreaseFontSize = () => setFontSize(prev => Math.max(prev - 10, 80)); // Limite de 80%
+  
 
   const openGenericModal = useCallback((title, content) => {
     setGenericModalTitle(title);
@@ -486,6 +521,12 @@ export default function App() {
         </button>
       )}
       <ScrollToTopButton />
+      {/* 3. RENDERIZAR O MENU E PASSAR AS FUNÇÕES */}
+      <AccessibilityMenu 
+        toggleContrast={toggleContrast}
+        increaseFontSize={increaseFontSize}
+        decreaseFontSize={decreaseFontSize}
+      />
     </div>
   );
 }

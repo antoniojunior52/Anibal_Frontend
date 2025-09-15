@@ -18,3 +18,64 @@ td {
   max-width: 150px; /* Altere este valor para o tamanho máximo desejado */
   white-space: normal; /* Permite a quebra de linha normal */
 }
+
+/* ==================================================== */
+/* == Regras de Acessibilidade para Alto Contraste == */
+/* ==================================================== */
+
+/* Estilos gerais para o modo de alto contraste */
+body.high-contrast {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+/* Estilos para elementos interativos como links, botões e formulários */
+body.high-contrast a,
+body.high-contrast button:not(:has(svg)), /* Não afeta botões que contêm apenas ícones */
+body.high-contrast input,
+body.high-contrast select,
+body.high-contrast textarea {
+  color: #FFFF00 !important; /* Amarelo para máxima visibilidade */
+  border-color: #FFFF00 !important;
+  background-color: #000 !important;
+}
+
+/* Ajustes para classes de background específicas do seu projeto (Tailwind) */
+body.high-contrast .bg-\[\#f3f4f6\],
+body.high-contrast .bg-white,
+body.high-contrast .bg-gray-100,
+body.high-contrast .bg-gray-200 {
+  background-color: #000 !important;
+}
+
+/* Ajustes para classes de texto específicas */
+body.high-contrast .text-\[\#1f2937\],
+body.high-contrast .text-gray-800,
+body.high-contrast .text-gray-600 {
+  color: #fff !important;
+}
+
+/* Ajuste para o botão principal azul e outros elementos de destaque */
+body.high-contrast .bg-\[\#4455a3\] {
+  background-color: #000 !important;
+  border: 1px solid #FFFF00;
+}
+
+/* Garante que o cabeçalho e rodapé também fiquem contrastados */
+body.high-contrast header,
+body.high-contrast footer {
+  background-color: #000 !important;
+  border-bottom: 1px solid #FFFF00;
+  border-top: 1px solid #FFFF00;
+}
+
+/* Melhora a visibilidade de imagens no modo de alto contraste */
+body.high-contrast img {
+  filter: grayscale(100%) contrast(200%);
+}
+
+/* Garante que as bordas da tabela fiquem visíveis */
+body.high-contrast th,
+body.high-contrast td {
+  border-color: #fff !important;
+}
