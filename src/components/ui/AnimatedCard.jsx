@@ -1,5 +1,5 @@
 import React from "react";
-import { useScrollAnimation } from "../../hooks";
+import { useScrollAnimation } from "../../hooks/hooks";
 
 const AnimatedCard = ({ children, className }) => {
   const [ref, isVisible] = useScrollAnimation();

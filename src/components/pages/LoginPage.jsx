@@ -1,26 +1,27 @@
-// components/pages/LoginPage.jsx
+// src/components/pages/LoginPage.jsx
+
 import React, { useState } from "react";
 import PageWrapper from "../ui/PageWrapper";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import FloatingLabelInput from "../ui/FloatingLabelInput";
-import LoadingSpinner from "../ui/LoadingSpinner"; // Importar o LoadingSpinner
+import LoadingSpinner from "../ui/LoadingSpinner";
 
 const LoginPage = ({ navigate, showNotification, handleLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [loading, setLoading] = useState(false); // Estado de carregamento
+  const [loading, setLoading] = useState(false);
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Iniciar carregamento
+    setLoading(true);
     try {
       await handleLogin(email, password, rememberMe);
     } catch (error) {
-      showNotification(error.message, "error");
+      // A notificação de erro já é tratada dentro do handleLogin no App.js
     } finally {
-      setLoading(false); // Parar carregamento
+      setLoading(false);
     }
   };
 
@@ -36,7 +37,7 @@ const LoginPage = ({ navigate, showNotification, handleLogin }) => {
               Faça login para continuar
             </p>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handleLoginSubmit} aria-label="Formulário de Login"> {/* Adicionado para acessibilidade */}
+          <form className="mt-8 space-y-6" onSubmit={handleLoginSubmit} aria-label="Formulário de Login">
             <FloatingLabelInput
               id="email-login"
               label="Email"
@@ -45,7 +46,9 @@ const LoginPage = ({ navigate, showNotification, handleLogin }) => {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <div className="relative">
+
+            {/* A CORREÇÃO FOI FEITA AQUI */}
+            <div className="relative password-input-wrapper">
               <FloatingLabelInput
                 id="password-login"
                 label="Senha"
@@ -58,16 +61,16 @@ const LoginPage = ({ navigate, showNotification, handleLogin }) => {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-gray-500 hover:text-gray-700"
-                style={{ top: '50%', transform: 'translateY(-50%)' }}
-                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} // Rótulo para acessibilidade
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
               >
                 {showPassword ? (
-                  <Eye className="h-5 w-5" aria-hidden="true" /> // Esconder ícone do leitor de tela
+                  <Eye className="h-5 w-5" aria-hidden="true" />
                 ) : (
-                  <EyeOff className="h-5 w-5" aria-hidden="true" /> // Esconder ícone do leitor de tela
+                  <EyeOff className="h-5 w-5" aria-hidden="true" />
                 )}
               </button>
             </div>
+
             <div className="flex items-center justify-between">
               <label className="flex items-center cursor-pointer">
                 <span className="mr-3 text-sm font-medium text-gray-900">
@@ -79,19 +82,19 @@ const LoginPage = ({ navigate, showNotification, handleLogin }) => {
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="sr-only"
-                    aria-label="Lembrar de mim" // Adicionado para acessibilidade
+                    aria-label="Lembrar de mim"
                   />
                   <div
                     className={`block w-10 h-6 rounded-full transition-colors ${
                       rememberMe ? "bg-[#4455a3]" : "bg-gray-200"
                     }`}
-                    aria-hidden="true" // Esconder o visual do toggle do leitor de tela
+                    aria-hidden="true"
                   ></div>
                   <div
                     className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
                       rememberMe ? "translate-x-full" : ""
                     }`}
-                    aria-hidden="true" // Esconder o visual do toggle do leitor de tela
+                    aria-hidden="true"
                   ></div>
                 </div>
               </label>
@@ -99,7 +102,7 @@ const LoginPage = ({ navigate, showNotification, handleLogin }) => {
                 type="button"
                 onClick={() => navigate("forgot-password")}
                 className="text-sm font-medium text-[#4455a3] hover:text-[#3a488a] transition-colors"
-                aria-label="Esqueci a senha?" // Adicionado para acessibilidade
+                aria-label="Esqueci a senha?"
               >
                 Esqueci a senha?
               </button>
@@ -108,8 +111,8 @@ const LoginPage = ({ navigate, showNotification, handleLogin }) => {
               <button
                 type="submit"
                 className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#4455a3] shadow-md hover:bg-[#3a488a] transition-all duration-300 transform hover:-translate-y-1"
-                disabled={loading} // Desabilitar botão enquanto carrega
-                aria-label="Entrar na conta" // Adicionado para acessibilidade
+                disabled={loading}
+                aria-label="Entrar na conta"
               >
                 {loading ? <LoadingSpinner size="sm" message="" /> : (
                   <>
@@ -126,7 +129,7 @@ const LoginPage = ({ navigate, showNotification, handleLogin }) => {
               <button
                 onClick={() => navigate("register")}
                 className="font-medium text-[#4455a3] hover:text-[#3a488a] transition-colors"
-                aria-label="Criar uma nova conta" // Adicionado para acessibilidade
+                aria-label="Criar uma nova conta"
               >
                 Crie uma aqui
               </button>

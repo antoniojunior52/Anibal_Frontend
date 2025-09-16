@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Bot, Send } from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
-import apiService from "../../apiService";
+import apiService from "../../services/apiService";
 
 const AIChatbot = ({ onClose }) => {
   const [messages, setMessages] = useState([]);

@@ -3,63 +3,82 @@
 @tailwind utilities;
 @import url('https://fonts.googleapis.com/css2?family=Open+Dyslexic:wght@400;700&display=swap');
 
-/* ==================================================== */
-/* == Regras de Acessibilidade para Alto Contraste == */
-/* ==================================================== */
-
-/* Estilos gerais para o modo de alto contraste */
 body.high-contrast {
-  background-color: #000 !important;
-  color: #fff !important;
+  /* Define variáveis de cor para facilitar a manutenção */
+  --hc-bg-color: #000000;
+  --hc-text-color: #ffffff;
+  --hc-link-color: #ffff00; /* Amarelo vivo para links e destaques */
+  --hc-border-color: #ffffff;
+  --hc-primary-bg: #3700b3; /* Um roxo para botões primários */
+  --hc-primary-text: #ffffff;
+
+  background-color: var(--hc-bg-color) !important;
+  color: var(--hc-text-color) !important;
 }
 
-/* Estilos para elementos interativos como links, botões e formulários */
-body.high-contrast a,
-body.high-contrast button:not(:has(svg)), /* Não afeta botões que contêm apenas ícones */
-body.high-contrast input,
-body.high-contrast select,
-body.high-contrast textarea {
-  color: #FFFF00 !important; /* Amarelo para máxima visibilidade */
-  border-color: #FFFF00 !important;
-  background-color: #000 !important;
+/* Inverte as cores da maioria dos componentes */
+.high-contrast div,
+.high-contrast header,
+.high-contrast footer,
+.high-contrast main,
+.high-contrast section,
+.high-contrast article,
+.high-contrast aside {
+  background-color: transparent !important;
+  color: inherit !important;
 }
 
-/* Ajustes para classes de background específicas do seu projeto (Tailwind) */
-body.high-contrast .bg-\[\#f3f4f6\],
-body.high-contrast .bg-white,
-body.high-contrast .bg-gray-100,
-body.high-contrast .bg-gray-200 {
-  background-color: #000 !important;
+/* Estiliza componentes específicos */
+.high-contrast h1, .high-contrast h2, .high-contrast h3, .high-contrast h4 {
+  color: var(--hc-link-color);
 }
 
-/* Ajustes para classes de texto específicas */
-body.high-contrast .text-\[\#1f2937\],
-body.high-contrast .text-gray-800,
-body.high-contrast .text-gray-600 {
-  color: #fff !important;
+.high-contrast a {
+  color: var(--hc-link-color) !important;
+  text-decoration: underline;
 }
 
-/* Ajuste para o botão principal azul e outros elementos de destaque */
-body.high-contrast .bg-\[\#4455a3\] {
-  background-color: #000 !important;
-  border: 1px solid #FFFF00;
+.high-contrast button,
+.high-contrast input[type="submit"],
+.high-contrast input[type="button"] {
+  background-color: var(--hc-bg-color) !important;
+  color: var(--hc-text-color) !important;
+  border: 2px solid var(--hc-border-color) !important;
+  box-shadow: none !important;
 }
 
-/* Garante que o cabeçalho e rodapé também fiquem contrastados */
-body.high-contrast header,
-body.high-contrast footer {
-  background-color: #000 !important;
-  border-bottom: 1px solid #FFFF00;
-  border-top: 1px solid #FFFF00;
+/* Destaque para botões primários (ajuste a classe se necessário) */
+.high-contrast .bg-\[\#4455a3\] {
+  background-color: var(--hc-primary-bg) !important;
+  color: var(--hc-primary-text) !important;
+  border: 2px solid var(--hc-link-color) !important;
 }
 
-/* Melhora a visibilidade de imagens no modo de alto contraste */
-body.high-contrast img {
-  filter: grayscale(100%) contrast(200%);
+.high-contrast input,
+.high-contrast textarea,
+.high-contrast select {
+  background-color: var(--hc-bg-color) !important;
+  color: var(--hc-text-color) !important;
+  border: 1px solid var(--hc-border-color) !important;
 }
 
-/* Garante que as bordas da tabela fiquem visíveis */
-body.high-contrast th,
-body.high-contrast td {
-  border-color: #fff !important;
+/* Remove sombras, que podem reduzir o contraste */
+.high-contrast * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Garante que imagens não fiquem excessivamente brilhantes */
+.high-contrast img {
+  filter: grayscale(50%) contrast(200%);
+}
+
+.password-input-wrapper input {
+  padding-right: 2.5rem !important; /* 40px */
+}
+
+.event-modal-description {
+  word-wrap: break-word;      /* Propriedade antiga para compatibilidade */
+  overflow-wrap: break-word;  /* Propriedade padrão e mais correta */
+  word-break: break-all;      /* Força a quebra de palavras muito longas */
 }

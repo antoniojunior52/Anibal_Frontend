@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Bot } from "lucide-react";
 
 // API Service
-import apiService from "./apiService";
+import apiService from "./services/apiService.js";
 
 // Hooks
-import { loadSheetJS } from "./hooks";
+import { loadSheetJS } from "./hooks/hooks.js";
 
 // UI Components
 import Notification from "./components/ui/Notification";
@@ -17,10 +17,8 @@ import CustomFileInput from "./components/ui/CustomFileInput";
 import ConfirmationModal from "./components/ui/ConfirmationModal";
 import LoadingSpinner from "./components/ui/LoadingSpinner";
 import Modal from "./components/ui/Modal";
-import ScrollToTopButton from "./components/ui/ScrollToTopButton";
 import AIChatbot from "./components/ui/AIChatbot";
-import AccessibilityMenu from "./components/ui/AccessibilityMenu.jsx";// 1. IMPORTAR O NOVO COMPONENTE
-
+import AccessibilityMenu from "./components/ui/AccessibilityMenu.jsx";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ptBR } from 'date-fns/locale';
@@ -41,7 +39,6 @@ import ForgotPasswordPage from "./components/pages/ForgotPasswordPage";
 import ResetPasswordPage from "./components/pages/ResetPasswordPage";
 import ErrorPage from "./components/pages/ErrorPage";
 import NoticesPage from "./components/pages/NoticesPage";
-import NotFoundPage from "./components/pages/NotFoundPage";
 
 // Dashboard Components
 import DashboardHome from "./components/dashboard/DashboardHome";
@@ -56,7 +53,6 @@ import SchedulesFormFull from "./components/dashboard/SchedulesFormFull";
 import UserManagementFull from "./components/dashboard/UserManagementFull";
 import UserRegistrationForm from "./components/dashboard/UserRegistrationForm";
 import NoticeFormFull from "./components/dashboard/NoticeFormFull";
-
 
 export const API_URL = "http://localhost:5000";
 
@@ -514,13 +510,12 @@ export default function App() {
       {!isChatbotOpen && (
         <button
           onClick={() => setIsChatbotOpen(true)}
-          className="fixed bottom-6 left-6 z-50 p-4 rounded-full bg-[#4455a3] text-white shadow-lg hover:bg-[#3a488a] transition-all duration-300 transform hover:-translate-y-1"
+          className="fixed bottom-6 left-6 z-50 p-4 rounded-full bg-[#ec9c30] text-white shadow-lg hover:bg-[#d68a2a] transition-all duration-300 transform hover:-translate-y-1"
           aria-label="Abrir assistente virtual"
         >
           <Bot size={24} />
         </button>
       )}
-      <ScrollToTopButton />
       {/* 3. RENDERIZAR O MENU E PASSAR AS FUNÇÕES */}
       <AccessibilityMenu 
         toggleContrast={toggleContrast}

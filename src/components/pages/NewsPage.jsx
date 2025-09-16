@@ -15,17 +15,13 @@ const NewsPage = ({ news, navigate }) => {
     return news.filter(item => {
       const newsDate = new Date(item.date);
       newsDate.setHours(0, 0, 0, 0);
-
       const selectedFilterDate = filterDate ? new Date(filterDate) : null;
       if (selectedFilterDate) {
         selectedFilterDate.setHours(0, 0, 0, 0);
       }
-
       const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             item.content.toLowerCase().includes(searchTerm.toLowerCase());
-      
       const matchesDate = !selectedFilterDate || newsDate >= selectedFilterDate;
-
       return matchesSearch && matchesDate;
     });
   }, [news, searchTerm, filterDate]);
@@ -36,15 +32,11 @@ const NewsPage = ({ news, navigate }) => {
   const currentNews = filteredNews.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
   const handleSearch = (term) => {
     setSearchTerm(term);
     setCurrentPage(1);
   };
-
   const handleFilterDateChange = (e) => {
     setFilterDate(e.target.value);
     setCurrentPage(1);
@@ -57,6 +49,7 @@ const NewsPage = ({ news, navigate }) => {
         subtitle="Acompanhe os últimos acontecimentos da nossa nossa comunidade escolar."
       />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        {/* ... (código dos filtros de pesquisa e data) ... */}
         <div className="bg-white p-4 rounded-lg shadow-sm mb-8 border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-700 mb-4 sr-only">Opções de Filtro</h3>
           <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -64,19 +57,9 @@ const NewsPage = ({ news, navigate }) => {
               <label htmlFor="search-news-input" className="block text-sm font-medium text-gray-700 mb-1">Pesquisar Notícia</label>
               <SearchBar onSearch={handleSearch} placeholder="Título ou conteúdo..." id="search-news-input" />
             </div>
-            
             <div className="md:w-1/3 lg:w-1/4">
               <label htmlFor="filter-date-input" className="block text-sm font-medium text-gray-700 mb-1">Filtrar a partir de</label>
-              <input
-                type="date"
-                id="filter-date-input"
-                value={filterDate}
-                onChange={handleFilterDateChange}
-                className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm
-                           focus:outline-none focus:ring-2 focus:ring-[#4455a3] focus:border-transparent
-                           text-gray-800"
-                aria-label="Filtrar notícias a partir desta data"
-              />
+              <input type="date" id="filter-date-input" value={filterDate} onChange={handleFilterDateChange} className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#4455a3] focus:border-transparent text-gray-800" aria-label="Filtrar notícias a partir desta data"/>
             </div>
           </div>
         </div>
@@ -85,31 +68,18 @@ const NewsPage = ({ news, navigate }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
             {currentNews.map((item) => (
               <AnimatedCard key={item._id} role="listitem">
-                <div
-                  onClick={() => navigate("news-detail", item._id)}
-                  className="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col cursor-pointer group"
-                  role="link"
-                  tabIndex="0"
-                  aria-label={`Ver detalhes da notícia: ${item.title}`}
-                  onKeyPress={(e) => { if (e.key === 'Enter') navigate("news-detail", item._id); }}
-                >
-                  <img
-                    src={`${API_URL}${item.image}`}
-                    alt={item.title}
-                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
-                    onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/600x400/CCCCCC/FFFFFF?text=Imagem+indisponível`; }}
-                  />
+                <div onClick={() => navigate("news-detail", item._id)} className="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col cursor-pointer group" role="link" tabIndex="0" aria-label={`Ver detalhes da notícia: ${item.title}`} onKeyPress={(e) => { if (e.key === 'Enter') navigate("news-detail", item._id); }}>
+                  <img src={`${API_URL}${item.image}`} alt={item.title} className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110" onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/600x400/CCCCCC/FFFFFF?text=Imagem+indisponível`; }}/>
                   <div className="p-6 flex-grow flex flex-col">
                     <p className="text-sm text-gray-500 mb-2">
-                      {new Date(item.date).toLocaleDateString("pt-BR", {
-                        timeZone: "UTC",
-                      })}
+                      {new Date(item.date).toLocaleDateString("pt-BR", { timeZone: "UTC" })}
                     </p>
                     <h3 className="text-xl font-bold text-gray-800 mb-3 flex-grow group-hover:text-[#4455a3] transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-gray-600">
-                      {item.content.substring(0, 100)}...
+                    {/* ATUALIZAÇÃO AQUI: Removemos o substring e usamos classes CSS para limitar o texto a 3 linhas */}
+                    <p className="text-gray-600 line-clamp-3">
+                      {item.content}
                     </p>
                   </div>
                 </div>
@@ -120,11 +90,7 @@ const NewsPage = ({ news, navigate }) => {
           <p className="text-center text-gray-500" role="status" aria-live="polite">Nenhuma notícia encontrada com os critérios de pesquisa/filtro.</p>
         )}
         {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
         )}
       </div>
     </PageWrapper>
