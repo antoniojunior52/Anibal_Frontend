@@ -74,7 +74,7 @@ const NewsPage = ({ news, navigate }) => {
                 onChange={handleFilterDateChange}
                 className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm
                            focus:outline-none focus:ring-2 focus:ring-[#4455a3] focus:border-transparent
-                           text-gray-800 rounded-full"
+                           text-gray-800"
                 aria-label="Filtrar notícias a partir desta data"
               />
             </div>

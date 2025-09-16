@@ -112,24 +112,8 @@ const PageWrapper = ({ children }) => (
   </div>
 );
 
-// Componente de link simulado
-const SectionLink = ({ to, children }) => {
-  const handleClick = (e) => {
-    e.preventDefault();
-    console.log(`Navegando para: ${to}`);
-    alert(`Navegando para ${to}`);
-  };
-
-  return (
-    // eslint-disable-next-line jsx-a11y/anchor-is-valid
-    <a onClick={handleClick} href="#" className="text-sm font-semibold text-blue-500 hover:text-blue-700 transition-colors">
-      {children}
-    </a>
-  );
-};
-
 // Componente principal da página
-const HomePage = () => {
+const HomePage = ({ navigate }) => {
   const { data, loading, error } = useAPI();
 
   const getRecentItems = (items) => {
@@ -167,9 +151,12 @@ const HomePage = () => {
           <section className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border-t-4 border-blue-500 animate-slide-in-up">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Últimas Notícias</h2>
-              <SectionLink to="/news">
+              <button
+                onClick={() => navigate("news")}
+                className="text-sm font-semibold text-blue-500 hover:text-blue-700 transition-colors"
+              >
                 Ver todas &rarr;
-              </SectionLink>
+              </button>
             </div>
             {loading.news ? (
               <p className="text-center text-gray-500">Carregando notícias...</p>
@@ -180,11 +167,12 @@ const HomePage = () => {
                 {recentNews.length > 0 ? (
                   recentNews.map((item) => (
                     <div key={item._id} className="p-6 rounded-xl shadow-md bg-white border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-                      {item.imageUrl && (
+                      {item.image && (
                         <img
-                          src={`${API_URL}${item.imageUrl}`}
+                          src={`${API_URL}${item.image}`}
                           alt={item.title}
                           className="w-full h-40 object-cover rounded-md mb-4"
+                          onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/600x400/CCCCCC/FFFFFF?text=Imagem+indisponível`; }}
                         />
                       )}
                       <div className="flex items-start mb-4">
@@ -210,6 +198,12 @@ const HomePage = () => {
           <section className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border-t-4 border-orange-500 animate-slide-in-up">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Recados Mais Recentes</h2>
+              <button
+                onClick={() => navigate("notices")}
+                className="text-sm font-semibold text-orange-500 hover:text-orange-700 transition-colors"
+              >
+                Ver todos &rarr;
+              </button>
             </div>
             {loading.notices ? (
               <p className="text-center text-gray-500">Carregando recados...</p>
@@ -243,9 +237,12 @@ const HomePage = () => {
           <section className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border-t-4 border-red-500 animate-slide-in-up">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Próximos Eventos</h2>
-              <SectionLink to="/events">
+              <button
+                onClick={() => navigate("events")}
+                className="text-sm font-semibold text-red-500 hover:text-red-700 transition-colors"
+              >
                 Ver todos &rarr;
-              </SectionLink>
+              </button>
             </div>
             {loading.events ? (
               <p className="text-center text-gray-500">Carregando eventos...</p>
@@ -260,7 +257,7 @@ const HomePage = () => {
                         <CalendarDays className="w-8 h-8 text-red-600 mr-4 flex-shrink-0" />
                         <div className="flex-grow">
                           <h3 className="text-lg font-bold text-gray-800">{item.title}</h3>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-lg font-bold text-red-600">
                              {format(parseISO(item.date), 'dd/MM/yyyy', { locale: ptBR })}
                           </p>
                         </div>
