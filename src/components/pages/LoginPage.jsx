@@ -124,7 +124,7 @@ const LoginPage = ({ navigate, showNotification, handleLogin }) => {
                 )}
               </button>
             </div>
-            <p className="mt-2 text-center text-sm text-gray-600">
+            {/* <p className="mt-2 text-center text-sm text-gray-600">
               Não tem uma conta?{" "}
               <button
                 onClick={() => navigate("register")}
@@ -133,7 +133,7 @@ const LoginPage = ({ navigate, showNotification, handleLogin }) => {
               >
                 Crie uma aqui
               </button>
-            </p>
+            </p> */}
           </form>
         </div>
       </div>

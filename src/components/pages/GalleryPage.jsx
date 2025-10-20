@@ -1,105 +1,74 @@
-import React, { useState } from "react";
+import React from "react";
 import PageWrapper from "../ui/PageWrapper";
 import PageTitle from "../ui/PageTitle";
 import AnimatedCard from "../ui/AnimatedCard";
-import Pagination from "../ui/Pagination";
-import { X } from "lucide-react";
 import { API_URL } from "../../App";
 
-const GalleryPage = ({ gallery }) => {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+const GalleryPage = ({ gallery, navigate }) => {
+  // Lógica para agrupar as imagens por álbum
+  const albums = gallery.reduce((acc, image) => {
+    const albumName = image.album || "Outras Fotos";
+    
+    if (!acc[albumName]) {
+      acc[albumName] = {
+        cover: image.url,
+        count: 0,
+      };
+    }
+    acc[albumName].count += 1;
+    return acc;
+  }, {});
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentGalleryItems = gallery.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(gallery.length / itemsPerPage);
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
+  const albumList = Object.entries(albums);
 
   return (
     <PageWrapper>
       <PageTitle
         title="Galeria de Momentos"
-        subtitle="Reviva os melhores momentos da nossa comunidade escolar."
+        subtitle="Explore nossos álbuns e reviva os melhores momentos da nossa comunidade."
       />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        {currentGalleryItems.length > 0 ? (
+        {albumList.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" role="list">
-            {currentGalleryItems.map((image, index) => (
+            {albumList.map(([albumName, albumData], index) => (
               <AnimatedCard
-                key={image._id}
+                key={albumName}
                 style={{ animationDelay: `${index * 100}ms` }}
                 className="h-full"
                 role="listitem"
               >
-                <div
-                  onClick={() => setSelectedImage(image)}
+                {/* O card do álbum usa uma <div> com onClick para navegação */}
+                <div 
+                  onClick={() => navigate('gallery-album', albumName)}
                   className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer group aspect-square"
+                  aria-label={`Ver álbum ${albumName}`}
                   role="button"
                   tabIndex="0"
-                  aria-label={`Ver imagem ${image.caption} em tamanho maior`}
-                  onKeyPress={(e) => { if (e.key === 'Enter') setSelectedImage(image); }}
+                  onKeyPress={(e) => { if (e.key === 'Enter') navigate('gallery-album', albumName); }}
                 >
                   <img
-                    src={`${API_URL}${image.url}`}
-                    alt={image.caption}
+                    src={`${API_URL}${albumData.cover}`}
+                    alt={`Capa do álbum ${albumName}`}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/400x400/CCCCCC/FFFFFF?text=Imagem+indisponível`; }}
+                    onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/400x400/CCCCCC/FFFFFF?text=Álbum`; }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-white text-sm font-semibold transform translate-y-4 group-hover:translate-y-0 transition-transform">
-                      {image.caption}
-                    </p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-center text-center p-4">
+                    <div>
+                      <h3 className="text-white text-lg font-bold drop-shadow-md">{albumName}</h3>
+                      <p className="text-white text-sm drop-shadow-md">{albumData.count} fotos</p>
+                    </div>
                   </div>
                 </div>
               </AnimatedCard>
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-500">Nenhuma imagem na galeria.</p>
-        )}
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          <p className="text-center text-gray-500">Nenhum álbum foi encontrado na galeria.</p>
         )}
       </div>
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setSelectedImage(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label={`Visualização da imagem: ${selectedImage.caption}`}
-        >
-          <div className="relative">
-            <img
-              src={`${API_URL}${selectedImage.url}`}
-              alt={selectedImage.caption}
-              className="max-h-[90vh] max-w-[90vw] rounded-lg shadow-2xl"
-              onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/800x600/CCCCCC/FFFFFF?text=Imagem+indisponível`; }}
-            />
-            <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-lg bg-black/50 px-4 py-2 rounded-lg">
-              {selectedImage.caption}
-            </p>
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute -top-3 -right-3 text-white bg-[#ec9c30] rounded-full p-1 shadow-lg hover:scale-110 transition-transform"
-              aria-label="Fechar visualização da imagem"
-            >
-              <X size={20} />
-            </button>
-          </div>
-        </div>
-      )}
     </PageWrapper>
   );
 };
 
 export default GalleryPage;
+

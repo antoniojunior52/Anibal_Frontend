@@ -39,6 +39,8 @@ import ForgotPasswordPage from "./components/pages/ForgotPasswordPage";
 import ResetPasswordPage from "./components/pages/ResetPasswordPage";
 import ErrorPage from "./components/pages/ErrorPage";
 import NoticesPage from "./components/pages/NoticesPage";
+import AlbumDetailPage from "./components/pages/AlbumDetailPage";
+import VerifyEmailPage from "./components/pages/VerifyEmailPage";
 
 // Dashboard Components
 import DashboardHome from "./components/dashboard/DashboardHome";
@@ -62,7 +64,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
-
+  const [userEmailForVerification, setUserEmailForVerification] = useState("");
   const [news, setNews] = useState([]);
   const [notices, setNotices] = useState([]);
   const [menuUrl, setMenuUrl] = useState("");
@@ -72,42 +74,33 @@ export default function App() {
   const [events, setEvents] = useState([]);
   const [gallery, setGallery] = useState([]);
   const [users, setUsers] = useState([]);
-
   const [notification, setNotification] = useState({ message: "", type: "" });
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmModalMessage, setConfirmModalMessage] = useState("");
   const [confirmModalCallback, setConfirmModalCallback] = useState(null);
   const [globalLoading, setGlobalLoading] = useState(false);
-
   const [showGenericModal, setShowGenericModal] = useState(false);
   const [genericModalTitle, setGenericModalTitle] = useState("");
   const [genericModalContent, setGenericModalContent] = useState(null);
-
   const [hasFetchedUsers, setHasFetchedUsers] = useState(false);
-
-  // 2. ADICIONAR ESTADOS E LÓGICA DE ACESSIBILIDADE
   const [isHighContrast, setIsHighContrast] = useState(false);
-  const [fontSize, setFontSize] = useState(100); // 100% é o tamanho base
+  const [fontSize, setFontSize] = useState(100);
 
   useEffect(() => {
-    // Efeito para o alto contraste
     if (isHighContrast) {
       document.body.classList.add('high-contrast');
     } else {
       document.body.classList.remove('high-contrast');
     }
-    // Salva a preferência do usuário no localStorage
     localStorage.setItem('highContrast', isHighContrast);
   }, [isHighContrast]);
 
   useEffect(() => {
-    // Efeito para o tamanho da fonte
     document.documentElement.style.fontSize = `${fontSize}%`;
     localStorage.setItem('fontSize', fontSize);
   }, [fontSize]);
 
   useEffect(() => {
-    // Carrega as preferências do usuário ao iniciar a aplicação
     const savedContrast = localStorage.getItem('highContrast') === 'true';
     const savedFontSize = parseInt(localStorage.getItem('fontSize'), 10);
     if (savedContrast) setIsHighContrast(true);
@@ -115,9 +108,8 @@ export default function App() {
   }, []);
 
   const toggleContrast = () => setIsHighContrast(prev => !prev);
-  const increaseFontSize = () => setFontSize(prev => Math.min(prev + 10, 150)); // Limite de 150%
-  const decreaseFontSize = () => setFontSize(prev => Math.max(prev - 10, 80)); // Limite de 80%
-  
+  const increaseFontSize = () => setFontSize(prev => Math.min(prev + 10, 150));
+  const decreaseFontSize = () => setFontSize(prev => Math.max(prev - 10, 80));
 
   const openGenericModal = useCallback((title, content) => {
     setGenericModalTitle(title);
@@ -140,14 +132,8 @@ export default function App() {
     setGlobalLoading(true);
     try {
       const [
-        newsData,
-        noticesData,
-        teamData,
-        historyData,
-        eventsData,
-        galleryData,
-        menuData,
-        schedulesData,
+        newsData, noticesData, teamData, historyData,
+        eventsData, galleryData, menuData, schedulesData,
       ] = await Promise.all([
         apiService.get("/api/news"),
         apiService.get("/api/notices"),
@@ -226,7 +212,6 @@ export default function App() {
         showNotification("Logout cancelado.", "info");
         return;
       }
-
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("loginTimestamp");
@@ -248,23 +233,44 @@ export default function App() {
     setGlobalLoading(true);
     try {
       const { token, user: userData } = await apiService.post("/api/auth/login", {
-        email,
-        password,
-        rememberMe,
+        email, password, rememberMe,
       });
       const storage = rememberMe ? localStorage : sessionStorage;
       storage.setItem("token", token);
       storage.setItem("user", JSON.stringify(userData));
-
       setUser(userData);
       setIsLoggedIn(true);
       navigate("dashboard");
-      showNotification(
-        `Bem-vindo(a) de volta, ${userData.name.split(" ")[0]}!`,
-        "success"
-      );
+      showNotification(`Bem-vindo(a) de volta, ${userData.name.split(" ")[0]}!`, "success");
     } catch (error) {
       showNotification(error.message, "error");
+      throw error;
+    } finally {
+      setGlobalLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async (code) => {
+    setGlobalLoading(true);
+    try {
+      await apiService.post("/api/auth/verify-email", { email: userEmailForVerification, code });
+      showNotification("Email verificado com sucesso! Pode fazer o login.", "success");
+      navigate("login");
+    } catch (error) {
+      showNotification(error.message || "Código inválido ou expirado.", "error");
+      throw error;
+    } finally {
+      setGlobalLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setGlobalLoading(true);
+    try {
+      await apiService.post("/api/auth/resend-code", { email: userEmailForVerification });
+      showNotification("Um novo código foi enviado para o seu email.", "info");
+    } catch (error) {
+      showNotification(error.message || "Falha ao reenviar código.", "error");
       throw error;
     } finally {
       setGlobalLoading(false);
@@ -275,8 +281,9 @@ export default function App() {
     setGlobalLoading(true);
     try {
       await apiService.post("/api/auth/register-by-admin", newUserData);
-      showNotification("Utilizador criado com sucesso!", "success");
+      showNotification("Utilizador criado com sucesso! Um email de verificação foi enviado.", "success");
       fetchUsers();
+      setUserEmailForVerification(newUserData.email);
     } catch (error) {
       showNotification(error.message, "error");
       throw error;
@@ -290,11 +297,8 @@ export default function App() {
     try {
       const endpoint = `/api/users/profile`;
       const updatedUser = await apiService.put(endpoint, updateData);
-      const storage = localStorage.getItem("token")
-        ? localStorage
-        : sessionStorage;
+      const storage = localStorage.getItem("token") ? localStorage : sessionStorage;
       storage.setItem("user", JSON.stringify(updatedUser));
-
       setUser(updatedUser);
       showNotification("Perfil atualizado com sucesso!", "success");
     } catch (error) {
@@ -321,21 +325,15 @@ export default function App() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const sessionToken = sessionStorage.getItem("token");
-
     if (token || sessionToken) {
       const storedUser = token ? localStorage.getItem("user") : sessionStorage.getItem("user");
       const loginTimestamp = localStorage.getItem("loginTimestamp");
-
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         const now = new Date().getTime();
         const twentyFourHours = 24 * 60 * 60 * 1000;
-
         if (token && loginTimestamp && (now - parseInt(loginTimestamp, 10) > twentyFourHours)) {
-          handleLogout(
-            "Sua sessão expirou por segurança. Por favor, faça login novamente.",
-            "info"
-          );
+          handleLogout("Sua sessão expirou por segurança. Por favor, faça login novamente.", "info");
         } else {
           if (!user || user.id !== parsedUser.id) {
             setUser(parsedUser);
@@ -361,58 +359,43 @@ export default function App() {
     }
   }, [navigate]);
 
-  const handleSave =
-    (endpoint, fetchFunction) =>
-    async (data, id = null) => {
-      const service =
-        typeof data.append === "function"
-          ? id
-            ? apiService.putForm
-            : apiService.postForm
-          : id
-          ? apiService.put
-          : apiService.post;
-      const url = id ? `${endpoint}/${id}` : endpoint;
-
-      if (id) {
-        const confirmed = await showConfirm("Tem a certeza que quer atualizar este item?");
-        if (!confirmed) {
-          showNotification("Atualização cancelada.", "info");
-          return;
-        }
+  const handleSave = (endpoint, fetchFunction) => async (data, id = null) => {
+    const service = typeof data.append === "function"
+      ? (id ? apiService.putForm : apiService.postForm)
+      : (id ? apiService.put : apiService.post);
+    const url = id ? `${endpoint}/${id}` : endpoint;
+    if (id) {
+      const confirmed = await showConfirm("Tem a certeza que quer atualizar este item?");
+      if (!confirmed) {
+        showNotification("Atualização cancelada.", "info");
+        return;
       }
-
-      setGlobalLoading(true);
-      try {
-        await service(url, data);
-        if(fetchFunction) fetchFunction();
-      } catch (e) {
-        showNotification(e.message, "error");
-        throw e;
-      } finally {
-        setGlobalLoading(false);
-      }
-    };
+    }
+    setGlobalLoading(true);
+    try {
+      await service(url, data);
+      if (fetchFunction) fetchFunction();
+    } catch (e) {
+      showNotification(e.message, "error");
+      throw e;
+    } finally {
+      setGlobalLoading(false);
+    }
+  };
   
   const handleDelete = useCallback((endpoint, fetchFunction) => async (id) => {
-    const confirmed = await showConfirm(
-      "Tem a certeza que quer apagar este item?"
-    );
-    if (confirmed) {
-      setGlobalLoading(true);
-      try {
-        await apiService.delete(`${endpoint}/${id}`);
-        showNotification("Item removido com sucesso.", "success");
-        if(fetchFunction) fetchFunction();
-      } catch (e) {
-        showNotification(e.message, "error");
-      } finally {
-        setGlobalLoading(false);
-      }
-    } else {
-      showNotification("Remoção cancelada.", "info");
+    setGlobalLoading(true);
+    try {
+      const url = id ? `${endpoint}/${id}` : endpoint;
+      await apiService.delete(url);
+      showNotification("Item removido com sucesso.", "success");
+      await fetchFunction();
+    } catch (e) {
+      showNotification(e.message, "error");
+    } finally {
+      setGlobalLoading(false);
     }
-  }, [showConfirm, showNotification]);
+  }, [showNotification]);
 
   const handleGlobalSearch = useCallback((searchTerm) => {
     showNotification(`Pesquisa global por: "${searchTerm}" (Funcionalidade a ser implementada)`, "info");
@@ -422,10 +405,9 @@ export default function App() {
     if (!isLoggedIn && page === "dashboard") {
       return <LoginPage navigate={navigate} showNotification={showNotification} handleLogin={handleLogin} />;
     }
-
     switch (page) {
       case "home": return <HomePage navigate={navigate} news={news} events={events} />;
-      case "register": return <RegisterPage navigate={navigate} showNotification={showNotification} apiService={apiService} />;
+      case "register": return <RegisterPage navigate={navigate} showNotification={showNotification} setUserEmailForVerification={setUserEmailForVerification} />;
       case "news": return <NewsPage news={news} navigate={navigate} />;
       case "notices": return <NoticesPage notices={notices} />;
       case "news-detail":
@@ -436,10 +418,21 @@ export default function App() {
       case "teachers": return <TeachersPage team={team} />;
       case "history": return <HistoryPage history={history} />;
       case "events": return <EventsPage events={events} />;
-      case "gallery": return <GalleryPage gallery={gallery} />;
+      case "gallery": return <GalleryPage gallery={gallery} navigate={navigate} />;
+      case "gallery-album": return (<AlbumDetailPage gallery={gallery} albumName={pagePayload} onBack={() => navigate("gallery")}/>);
       case "login": return <LoginPage navigate={navigate} showNotification={showNotification} handleLogin={handleLogin} />;
       case "forgot-password": return <ForgotPasswordPage navigate={navigate} showNotification={showNotification} apiService={apiService} />;
       case "reset-password": return <ResetPasswordPage token={pagePayload} navigate={navigate} showNotification={showNotification} apiService={apiService} />;
+      case "verify-email":
+        return (
+          <VerifyEmailPage
+            navigate={navigate}
+            userEmail={userEmailForVerification}
+            handleVerifyCode={handleVerifyCode}
+            handleResendCode={handleResendCode}
+            showNotification={showNotification}
+          />
+        );
       case "dashboard":
         if (!isLoggedIn) return <LoginPage navigate={navigate} showNotification={showNotification} handleLogin={handleLogin} />;
         const backButton = (
@@ -448,6 +441,8 @@ export default function App() {
           </button>
         );
         let dashboardContent;
+        const menuDataForComponent = { fileUrl: menuUrl, updatedAt: menuUrl ? 'data_mock' : undefined };
+
         switch (pagePayload) {
           case "profile": dashboardContent = <div>{backButton}<ProfileManagementForm user={user} handleProfileUpdate={handleProfileUpdate} handleChangePassword={handleChangePassword} showNotification={showNotification} /></div>; break;
           case "news": dashboardContent = <div>{backButton}<NewsFormFull news={news} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} CustomFileInput={CustomFileInput} /></div>; break;
@@ -455,10 +450,10 @@ export default function App() {
           case "team": dashboardContent = <div>{backButton}<TeamFormFull team={team} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} CustomFileInput={CustomFileInput} /></div>; break;
           case "history": dashboardContent = <div>{backButton}<HistoryFormFull history={history} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} /></div>; break;
           case "events": dashboardContent = <div>{backButton}<EventsFormFull events={events} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} /></div>; break;
-          case "gallery": dashboardContent = <div>{backButton}<GalleryFormFull gallery={gallery} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} CustomFileInput={CustomFileInput} /></div>; break;
-          case "menu": dashboardContent = <div>{backButton}<MenuFormFull setMenuUrl={setMenuUrl} showNotification={showNotification} apiService={apiService} fetchAllData={fetchAllData} CustomFileInput={CustomFileInput} /></div>; break;
+          case "gallery": dashboardContent = <div>{backButton}<GalleryFormFull gallery={gallery} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} CustomFileInput={CustomFileInput} showConfirm={showConfirm} /></div>; break;
+          case "menu": dashboardContent = <div>{backButton}<MenuFormFull menu={menuDataForComponent} showNotification={showNotification} apiService={apiService} fetchAllData={fetchAllData} /></div>; break;
           case "schedules": dashboardContent = <div>{backButton}<SchedulesFormFull schedules={schedules} setSchedules={setSchedules} showNotification={showNotification} apiService={apiService} fetchAllData={fetchAllData} CustomFileInput={CustomFileInput} /></div>; break;
-          case "users": dashboardContent = <div>{backButton}<UserManagementFull users={users} user={user} fetchUsers={fetchUsers} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} /></div>; break;
+          case "users": dashboardContent = <div>{backButton}<UserManagementFull users={users} user={user} fetchUsers={fetchUsers} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} handleRegisterByAdmin={handleRegisterByAdmin} navigate={navigate} /></div>; break;
           case "register-user": dashboardContent = <div>{backButton}<UserRegistrationForm handleRegisterByAdmin={handleRegisterByAdmin} /></div>; break;
           default: dashboardContent = <DashboardHome navigate={navigate} user={user} />;
         }
@@ -504,9 +499,9 @@ export default function App() {
         onClose={closeGenericModal}
         title={genericModalTitle}
       >
-        null
+        {genericModalContent}
       </Modal>
-      {isChatbotOpen && <AIChatbot onClose={() => setIsChatbotOpen(false)} />}
+      {/* {isChatbotOpen && <AIChatbot onClose={() => setIsChatbotOpen(false)} />}
       {!isChatbotOpen && (
         <button
           onClick={() => setIsChatbotOpen(true)}
@@ -515,8 +510,7 @@ export default function App() {
         >
           <Bot size={24} />
         </button>
-      )}
-      {/* 3. RENDERIZAR O MENU E PASSAR AS FUNÇÕES */}
+      )} */}
       <AccessibilityMenu 
         toggleContrast={toggleContrast}
         increaseFontSize={increaseFontSize}
@@ -525,3 +519,4 @@ export default function App() {
     </div>
   );
 }
+

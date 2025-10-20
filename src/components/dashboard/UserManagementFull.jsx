@@ -1,152 +1,111 @@
-// components/dashboard/UserManagementFull.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import FormWrapper from "../ui/FormWrapper";
-import { UserCog, Trash2 } from "lucide-react";
-import Pagination from "../ui/Pagination"; // Importar o componente de Paginação
-import LoadingSpinner from "../ui/LoadingSpinner"; // Importar o LoadingSpinner
+import { UserCog, PlusCircle, List, Search } from "lucide-react";
+import Pagination from "../ui/Pagination";
+import LoadingSpinner from "../ui/LoadingSpinner";
+import UserListItem from "./UserListItem";
+import UserRegistrationForm from "./UserRegistrationForm"; // 1. Importar o formulário de cadastro
 
-const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete, showNotification }) => {
+const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete, showNotification, handleRegisterByAdmin }) => { // 2. Receber a prop 'handleRegisterByAdmin'
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("list");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Definir quantos utilizadores por página
-  const [loading, setLoading] = useState(false); // Estado de carregamento
-
-  // Calcular utilizadores para a página atual
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentUsers = users.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(users.length / itemsPerPage);
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
+  const [loading, setLoading] = useState(false);
+  const itemsPerPage = 5;
 
   const handlePermissionChange = async (userId, field, value) => {
-    setLoading(true); // Iniciar carregamento
+    if (userId === user.id && field === "isAdmin" && !value) {
+      showNotification("Não pode remover o seu próprio acesso de Admin.", "error"); return;
+    }
+    setLoading(true);
     try {
-      if (userId === user.id && field === "isAdmin" && !value) {
-        showNotification(
-          "Não pode remover o seu próprio acesso de Admin.",
-          "error"
-        );
-        setLoading(false); // Parar carregamento
-        return;
-      }
       await handleSave("/api/users", fetchUsers)({ [field]: value }, userId);
-      showNotification("Permissões do utilizador atualizadas!.", "success"); // Mensagem de sucesso mais clara
+      showNotification("Permissões do utilizador atualizadas!", "success");
     } catch (e) {
       showNotification(e.message, "error");
     } finally {
-      setLoading(false); // Parar carregamento
+      setLoading(false);
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm("Tem a certeza que deseja apagar este utilizador?")) {
+      await handleDelete("/api/users", fetchUsers)(userId);
+    }
+  };
+
+  // 3. Criar uma função para cadastrar e depois mudar de aba
+  const handleRegisterAndSwitchTab = async (userData) => {
+    // Tenta registrar o utilizador
+    await handleRegisterByAdmin(userData);
+    // Se o cadastro for bem-sucedido, a lógica no 'handleRegisterByAdmin' (no App.js) já deve atualizar a lista de utilizadores via 'fetchUsers'.
+    // Apenas mudamos de aba.
+    setActiveTab('list');
+  };
+
+  const filteredUsers = useMemo(() => 
+    users.filter(u =>
+      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchQuery.toLowerCase())
+    ), [users, searchQuery]);
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const currentUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+  
+  useState(() => { setCurrentPage(1); }, [searchQuery]);
+
+  const tabClasses = (tabName) => `flex items-center justify-center w-full px-4 py-3 font-semibold transition-all duration-300 border-b-2
+    ${activeTab === tabName ? "border-yellow-500 text-black" : "border-transparent text-gray-500 hover:text-gray-800"}`;
+
   return (
-    <FormWrapper
-      title="Gerir Utilizadores"
-      icon={<UserCog className="mr-2 text-yellow-500" />}
-    >
-      {loading && <LoadingSpinner message="A atualizar permissões..." />} {/* Exibir spinner */}
-      <div className="space-y-3 max-h-96 overflow-y-auto pr-2" role="region" aria-label="Lista de Utilizadores"> {/* Adicionado role e aria-label */}
-        {currentUsers.length > 0 ? (
-          currentUsers.map((u) => (
-            <div
-              key={u._id}
-              className="flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-50 p-3 rounded-md shadow-sm space-y-3 md:space-y-0"
-              aria-label={`Utilizador: ${u.name} - ${u.email}`} // Rótulo para cada item
-            >
-              <div>
-                <p className="font-semibold">
-                  {u.name}{" "}
-                  {u._id === user.id && (
-                    <span className="text-xs text-[#4455a3]">(Você)</span>
-                  )}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {u.email} - <span className="italic">{u.role}</span>
-                </p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <label className="flex items-center cursor-pointer">
-                  <span className="mr-2 text-sm">Secretaria</span>
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={u.isSecretaria || false}
-                      onChange={(e) =>
-                        handlePermissionChange(
-                          u._id,
-                          "isSecretaria",
-                          e.target.checked
-                        )
-                      }
-                      aria-label={`Alterar permissão de secretaria para ${u.name}`} // Rótulo para acessibilidade
-                    />
-                    <div
-                      className={`block w-10 h-6 rounded-full transition-colors ${
-                        u.isSecretaria ? "bg-[#4455a3]" : "bg-gray-200"
-                      }`}
-                      aria-hidden="true" // Esconder o visual do toggle do leitor de tela
-                    ></div>
-                    <div
-                      className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
-                        u.isSecretaria ? "translate-x-full" : ""
-                      }`}
-                      aria-hidden="true" // Esconder o visual do toggle do leitor de tela
-                    ></div>
-                  </div>
-                </label>
-                <label className="flex items-center cursor-pointer">
-                  <span className="mr-2 text-sm">Admin</span>
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={u.isAdmin || false}
-                      onChange={(e) =>
-                        handlePermissionChange(
-                          u._id,
-                          "isAdmin",
-                          e.target.checked
-                        )
-                      }
-                      aria-label={`Alterar permissão de administrador para ${u.name}`} // Rótulo para acessibilidade
-                    />
-                    <div
-                      className={`block w-10 h-6 rounded-full transition-colors ${
-                        u.isAdmin ? "bg-[#4455a3]" : "bg-gray-200"
-                      }`}
-                      aria-hidden="true" // Esconder o visual do toggle do leitor de tela
-                    ></div>
-                    <div
-                      className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
-                        u.isAdmin ? "translate-x-full" : ""
-                      }`}
-                      aria-hidden="true" // Esconder o visual do toggle do leitor de tela
-                    ></div>
-                  </div>
-                </label>
-                <button
-                  onClick={() => handleDelete("/api/users", fetchUsers)(u._id)}
-                  className="text-red-500 p-2 rounded-full hover:bg-red-100 transition-colors disabled:opacity-50"
-                  disabled={u._id === user.id}
-                  aria-label={`Apagar utilizador ${u.name}`} // Rótulo para acessibilidade
-                >
-                  <Trash2 size={18} aria-hidden="true" /> {/* Ícone decorativo */}
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-500">Nenhum utilizador encontrado.</p>
-        )}
+    <FormWrapper title="Gerir Utilizadores" icon={<UserCog className="mr-2 text-yellow-500" />}>
+      <div className="flex border-b border-gray-200 mb-6">
+        <button onClick={() => setActiveTab("list")} className={tabClasses("list")}>
+          <List size={18} className="mr-2" />
+          Lista de Utilizadores ({users.length})
+        </button>
+        <button onClick={() => setActiveTab("form")} className={tabClasses("form")}>
+          <PlusCircle size={18} className="mr-2" />
+          Adicionar Novo
+        </button>
       </div>
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
+
+      {/* 4. Renderizar o formulário de cadastro na aba 'form' */}
+      {activeTab === 'form' && (
+        <UserRegistrationForm 
+          handleRegisterByAdmin={handleRegisterAndSwitchTab} 
         />
+      )}
+
+      {activeTab === 'list' && (
+        <div className="animate-fade-in">
+          {loading && <LoadingSpinner message="A atualizar permissões..." />}
+          <div className="relative mb-8">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3"><Search className="h-5 w-5 text-gray-400" /></span>
+            <input type="text" placeholder="Buscar por nome ou email..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition" />
+          </div>
+          
+          <div className="space-y-4">
+            {currentUsers.length > 0 ? (
+              currentUsers.map((u) => (
+                <UserListItem 
+                  key={u._id} userItem={u} currentUser={user}
+                  onPermissionChange={handlePermissionChange} onDelete={handleDeleteUser}
+                />
+              ))
+            ) : (
+              <p className="text-center text-gray-500 py-10">Nenhum utilizador encontrado.</p>
+            )}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="mt-8">
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+            </div>
+          )}
+        </div>
       )}
     </FormWrapper>
   );
