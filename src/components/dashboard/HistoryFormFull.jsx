@@ -72,11 +72,11 @@ const HistoryFormFull = ({ history, fetchAllData, handleSave, handleDelete, show
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
             {/* CORREÇÃO AQUI: 'text-white' alterado para 'text-black' */}
-            <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-yellow-500 text-black p-3 rounded-md shadow-sm hover:bg-yellow-600 transition-colors disabled:bg-gray-400 font-semibold">
-              {isLoading ? <LoadingSpinner size="sm" /> : (editing ? "Atualizar Marco" : "Adicionar Marco")}
-            </button>
             <button type="button" onClick={() => { resetForm(); setActiveTab("list"); }} className="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600">
               Cancelar
+            </button>
+            <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-yellow-500 text-black p-3 rounded-md shadow-sm hover:bg-yellow-600 transition-colors disabled:bg-gray-400 font-semibold">
+              {isLoading ? <LoadingSpinner size="sm" /> : (editing ? "Atualizar Marco" : "Adicionar Marco")}
             </button>
           </div>
         </form>

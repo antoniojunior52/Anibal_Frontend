@@ -106,11 +106,11 @@ const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllDa
           <FileUpload key={resetKey} label="Arquivo Excel do Horário" onChange={setFile} allowedTypes={["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel"]} fileTypeName="Excel" />
           <div className="flex flex-col sm:flex-row gap-4">
             {/* CORREÇÃO AQUI: 'text-white' alterado para 'text-black' */}
-            <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-green-500 text-black p-3 rounded-md shadow-sm hover:bg-green-600 transition-colors disabled:bg-gray-400 font-semibold">
-              {isLoading ? <LoadingSpinner size="sm" /> : "Salvar Horário"}
-            </button>
             <button type="button" onClick={() => setActiveTab("list")} className="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600">
               Cancelar
+            </button>
+            <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-green-500 text-black p-3 rounded-md shadow-sm hover:bg-green-600 transition-colors disabled:bg-gray-400 font-semibold">
+              {isLoading ? <LoadingSpinner size="sm" /> : "Salvar Horário"}
             </button>
           </div>
         </form>

@@ -112,15 +112,15 @@ const MenuFormFull = ({ menu, showNotification, apiService, fetchAllData }) => {
             fileTypeName="PDF"
           />
           <div className="flex flex-col sm:flex-row gap-4">
+             <button type="button" onClick={() => setActiveTab("list")} className="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600">
+              Cancelar
+            </button>
             <button 
               type="submit" 
               disabled={isLoading}
               className="w-full flex justify-center items-center bg-red-500 text-white p-3 rounded-md shadow-sm hover:bg-red-600 transition-colors disabled:bg-gray-400 font-semibold"
             >
               {isLoading ? <LoadingSpinner size="sm" /> : "Enviar Novo Cardápio"}
-            </button>
-             <button type="button" onClick={() => setActiveTab("list")} className="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600">
-              Cancelar
             </button>
           </div>
         </form>

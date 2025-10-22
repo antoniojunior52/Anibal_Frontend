@@ -102,11 +102,11 @@ const GalleryFormFull = ({ gallery, fetchAllData, handleSave, handleDelete, show
             <MultiImageUpload label="Selecione as Imagens do Álbum" onChange={setFiles} maxFiles={20} />
             <FloatingLabelInput id="gallery-album-name" label="Nome do Novo Álbum" type="text" value={albumName} onChange={(e) => setAlbumName(e.target.value)} required />
             <div className="flex flex-col sm:flex-row gap-4">
-              <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-sky-500 text-white p-3 rounded-md shadow-sm hover:bg-sky-600 transition-colors disabled:bg-gray-400">
-                {isLoading ? <LoadingSpinner size="sm" /> : "Adicionar Álbum"}
-              </button>
               <button type="button" onClick={() => { resetForm(); setActiveTab("list"); }} className="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600">
                 Cancelar
+              </button>
+              <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-sky-500 text-white p-3 rounded-md shadow-sm hover:bg-sky-600 transition-colors disabled:bg-gray-400">
+                {isLoading ? <LoadingSpinner size="sm" /> : "Adicionar Álbum"}
               </button>
             </div>
           </form>

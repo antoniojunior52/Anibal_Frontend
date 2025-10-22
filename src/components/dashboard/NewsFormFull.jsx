@@ -88,11 +88,11 @@ const NewsFormFull = ({ news, fetchAllData, handleSave, handleDelete, showNotifi
           </div>
           <ImageUpload key={resetKey} label="Imagem da Notícia" onChange={setFile} existingImageUrl={editing?.imageUrl} isLoading={isLoading}/>
           <div className="flex flex-col sm:flex-row gap-4">
-            <button type="submit" disabled={isLoading} className="w-full bg-teal-500 text-white p-3 rounded-md shadow-sm hover:bg-teal-600 flex items-center justify-center space-x-2 disabled:bg-gray-400 transition-colors">
-              {isLoading ? <LoadingSpinner size="sm"/> : <span>{editing ? "Atualizar Notícia" : "Salvar Notícia"}</span>}
-            </button>
             <button type="button" onClick={() => { resetForm(); setActiveTab("list"); }} className="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600 transition-colors">
               Cancelar
+            </button>
+            <button type="submit" disabled={isLoading} className="w-full bg-teal-500 text-white p-3 rounded-md shadow-sm hover:bg-teal-600 flex items-center justify-center space-x-2 disabled:bg-gray-400 transition-colors">
+              {isLoading ? <LoadingSpinner size="sm"/> : <span>{editing ? "Atualizar Notícia" : "Salvar Notícia"}</span>}
             </button>
           </div>
         </form>

@@ -72,11 +72,11 @@ const EventsFormFull = ({ events, fetchAllData, handleSave, handleDelete, showNo
             <label htmlFor="event-description" className={`absolute left-3 text-gray-500 transition-all duration-200 ease-in-out cursor-text ${description ? 'top-[-10px] text-xs text-pink-500 bg-white px-1' : 'top-2 text-base'} peer-focus:top-[-10px] peer-focus:text-xs peer-focus:text-pink-500 peer-focus:bg-white peer-focus:px-1`}>Descrição</label>
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
-            <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-pink-500 text-white p-3 rounded-md shadow-sm hover:bg-pink-600 transition-colors disabled:bg-gray-400">
-              {isLoading ? <LoadingSpinner size="sm" /> : (editing ? "Atualizar Evento" : "Adicionar Evento")}
-            </button>
             <button type="button" onClick={() => { resetForm(); setActiveTab("list"); }} className="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600">
               Cancelar
+            </button>
+            <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-pink-500 text-white p-3 rounded-md shadow-sm hover:bg-pink-600 transition-colors disabled:bg-gray-400">
+              {isLoading ? <LoadingSpinner size="sm" /> : (editing ? "Atualizar Evento" : "Adicionar Evento")}
             </button>
           </div>
         </form>
