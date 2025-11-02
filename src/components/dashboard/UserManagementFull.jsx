@@ -6,7 +6,8 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import UserListItem from "./UserListItem";
 import UserRegistrationForm from "./UserRegistrationForm"; // 1. Importar o formulário de cadastro
 
-const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete, showNotification, handleRegisterByAdmin }) => { // 2. Receber a prop 'handleRegisterByAdmin'
+// 2. Receber 'apiService' (para a verificação de e-mail no formulário de registro)
+const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete, showNotification, handleRegisterByAdmin, apiService, navigate }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("list");
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,18 +29,22 @@ const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete,
     }
   };
 
+  // 3. *** CORREÇÃO DO ALERTA DE EXCLUSÃO ***
   const handleDeleteUser = async (userId) => {
-    if (window.confirm("Tem a certeza que deseja apagar este utilizador?")) {
-      await handleDelete("/api/users", fetchUsers)(userId);
-    }
+    // REMOVIDO: O 'window.confirm'
+    // A prop 'handleDelete' (vinda do App.js) JÁ TEM o modal de confirmação embutido.
+    // Basta chamá-la diretamente.
+    await handleDelete("/api/users", fetchUsers)(userId);
   };
 
-  // 3. Criar uma função para cadastrar e depois mudar de aba
+  // 4. Função para cadastrar E VOLTAR para a lista
+  // (A lógica de 'navigate' foi movida do App.js para cá)
   const handleRegisterAndSwitchTab = async (userData) => {
     // Tenta registrar o utilizador
     await handleRegisterByAdmin(userData);
-    // Se o cadastro for bem-sucedido, a lógica no 'handleRegisterByAdmin' (no App.js) já deve atualizar a lista de utilizadores via 'fetchUsers'.
-    // Apenas mudamos de aba.
+    
+    // A lógica em 'handleRegisterByAdmin' (no App.js) já atualiza a lista via 'fetchUsers'.
+    // Agora, apenas mudamos de aba.
     setActiveTab('list');
   };
 
@@ -72,10 +77,11 @@ const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete,
         </button>
       </div>
 
-      {/* 4. Renderizar o formulário de cadastro na aba 'form' */}
+      {/* 5. Renderizar o formulário e PASSAR 'apiService' para a verificação de e-mail */}
       {activeTab === 'form' && (
         <UserRegistrationForm 
           handleRegisterByAdmin={handleRegisterAndSwitchTab} 
+          apiService={apiService} // <-- PROP ADICIONADA
         />
       )}
 
@@ -92,7 +98,8 @@ const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete,
               currentUsers.map((u) => (
                 <UserListItem 
                   key={u._id} userItem={u} currentUser={user}
-                  onPermissionChange={handlePermissionChange} onDelete={handleDeleteUser}
+                  onPermissionChange={handlePermissionChange} 
+                  onDelete={handleDeleteUser} // <-- Esta é a função que corrigimos
                 />
               ))
             ) : (

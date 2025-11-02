@@ -38,7 +38,11 @@ const ResetPasswordPage = ({ navigate, showNotification, apiService, token }) =>
     try {
       const { msg } = await apiService.put(`/api/auth/reset-password/${token}`, { password });
       showNotification(msg, "success");
-      navigate("login");
+      
+      // *** MODIFICAÇÃO APLICADA AQUI ***
+      // Redireciona para a 'home' (http://localhost:3000) em vez de 'login'
+      navigate("home");
+
     } catch (error) {
       showNotification(error.message, "error");
     }
@@ -73,7 +77,7 @@ const ResetPasswordPage = ({ navigate, showNotification, apiService, token }) =>
               label="Confirmar Nova Senha"
               type="password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => setConfirmPassword(e.targe.value)}
               required
               onFocus={() => setIsPasswordFocused(true)}
               onBlur={() => setIsPasswordFocused(false)}
