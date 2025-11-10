@@ -5,7 +5,8 @@ import FileUpload from "../ui/FileUpload";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import ScheduleItem from "./ScheduleItem";
 
-const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllData }) => {
+// 1. ADICIONADO 'showConfirm' ÀS PROPS
+const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllData, showConfirm }) => {
   const classList = ["6º Ano A", "6º Ano B", "6º Ano C", "7º Ano A", "7º Ano B", "8º Ano A", "8º Ano B", "9º Ano A", "9º Ano B"];
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("list");
@@ -48,8 +49,14 @@ const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllDa
     }
   };
 
+  // 2. FUNÇÃO 'handleDeleteSchedule' ATUALIZADA
   const handleDeleteSchedule = async (className) => {
-    const confirmed = window.confirm(`Tem a certeza que quer apagar o horário de ${className}?`);
+    // Linha antiga (removida):
+    // const confirmed = window.confirm(`Tem a certeza que quer apagar o horário de ${className}?`);
+    
+    // Nova linha (usando o modal):
+    const confirmed = await showConfirm(`Tem a certeza que quer apagar o horário de ${className}?`);
+
     if (confirmed) {
       try {
         await apiService.delete(`/api/schedules/${encodeURIComponent(className)}`);

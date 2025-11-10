@@ -1,29 +1,72 @@
 import React, { useState } from "react";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import FloatingLabelInput from "../ui/FloatingLabelInput";
+// Importa os ícones de status e o spinner
+import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 
-const UserRegistrationForm = ({ handleRegisterByAdmin }) => {
+// 1. Recebe 'apiService' como prop
+const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("Professor(a)");
   const [isSecretaria, setIsSecretaria] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isManuallyVerified, setIsManuallyVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 2. Novos estados para verificação de e-mail
+  const [emailCheckStatus, setEmailCheckStatus] = useState('idle'); // idle, checking, valid, invalid
+  const [emailCheckMessage, setEmailCheckMessage] = useState('');
 
   const resetForm = () => {
     setName(""); setEmail(""); setPassword("");
     setRole("Professor(a)"); setIsSecretaria(false); setIsAdmin(false);
+    setIsManuallyVerified(false);
+    // 3. Reseta os novos estados
+    setEmailCheckStatus('idle');
+    setEmailCheckMessage('');
+  };
+
+  // 4. Função para verificar o e-mail quando o usuário sai do campo
+  const handleEmailBlur = async () => {
+    // Não verifica se estiver vazio ou se não for um formato de e-mail
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailCheckStatus('idle');
+      return; 
+    }
+    
+    setEmailCheckStatus('checking');
+    setEmailCheckMessage('');
+    
+    try {
+      // Usa o apiService recebido via props
+      await apiService.post("/api/auth/check-email", { email });
+      setEmailCheckStatus('valid');
+      setEmailCheckMessage('E-mail disponível!');
+    } catch (error) {
+      setEmailCheckStatus('invalid');
+      setEmailCheckMessage(error.message || 'Erro ao verificar e-mail.');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 5. Verificação extra antes de submeter
+    if (emailCheckStatus === 'invalid') {
+      // Idealmente, o botão estaria desabilitado, mas é uma garantia extra
+      return; 
+    }
+    
     setIsLoading(true);
     try {
-      await handleRegisterByAdmin({ name, email, password, role, isSecretaria, isAdmin });
+      await handleRegisterByAdmin({ 
+        name, email, password, role, isSecretaria, isAdmin, isManuallyVerified 
+      });
       resetForm();
     } catch (error) {
-      // O erro já é notificado pela função pai
+      // O erro já é notificado pela função pai (App.js)
     } finally {
       setIsLoading(false);
     }
@@ -33,7 +76,44 @@ const UserRegistrationForm = ({ handleRegisterByAdmin }) => {
     <div className="max-w-xl mx-auto animate-fade-in pt-4">
       <form onSubmit={handleSubmit} className="space-y-6">
         <FloatingLabelInput id="register-admin-name" label="Nome Completo" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-        <FloatingLabelInput id="register-admin-email" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        
+        {/* 6. Wrapper para o Input de E-mail e o Feedback */}
+        <div>
+          <FloatingLabelInput 
+            id="register-admin-email" 
+            label="Email" 
+            type="email" 
+            value={email} 
+            // 7. Reseta o status ao digitar
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setEmailCheckStatus('idle'); // Reseta ao digitar
+              setEmailCheckMessage('');
+            }}
+            // 8. Verifica ao sair do campo
+            onBlur={handleEmailBlur}
+            required 
+          />
+          {/* 9. Feedback visual da verificação */}
+          <div className="h-5 mt-1 ml-1 text-sm">
+            {emailCheckStatus === 'checking' && (
+              <span className="flex items-center text-gray-500 animate-pulse">
+                <Loader2 className="animate-spin h-4 w-4 mr-1" /> Verificando...
+              </span>
+            )}
+            {emailCheckStatus === 'valid' && (
+              <span className="flex items-center text-green-600">
+                <CheckCircle className="h-4 w-4 mr-1" /> {emailCheckMessage}
+              </span>
+            )}
+            {emailCheckStatus === 'invalid' && (
+              <span className="flex items-center text-red-600">
+                <AlertCircle className="h-4 w-4 mr-1" /> {emailCheckMessage}
+              </span>
+            )}
+          </div>
+        </div>
+
         <FloatingLabelInput id="register-admin-password" label="Senha Provisória" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         
         <div>
@@ -44,7 +124,6 @@ const UserRegistrationForm = ({ handleRegisterByAdmin }) => {
               <option value="Secretaria">Secretaria</option>
               <option value="Coordenação">Coordenação</option>
               <option value="Diretora">Diretora</option>
-              {/* AQUI a nova opção foi adicionada */}
               <option value="Vice-Diretora">Vice-Diretora</option>
               <option value="Admin">Admin</option>
             </select>
@@ -54,26 +133,44 @@ const UserRegistrationForm = ({ handleRegisterByAdmin }) => {
           </div>
         </div>
         
-        <div className="flex items-center space-x-8 pt-2">
-          <label className="flex items-center cursor-pointer">
-            <span className="mr-3 text-sm font-medium text-gray-900">Acesso de Secretaria</span>
+        <div className="space-y-4 pt-2">
+          <label className="flex items-center justify-between cursor-pointer">
+            <span className="font-medium text-gray-900">Acesso de Secretaria</span>
             <div className="relative">
               <input type="checkbox" checked={isSecretaria} onChange={(e) => setIsSecretaria(e.target.checked)} className="sr-only" />
               <div className={`block w-10 h-6 rounded-full transition-colors ${isSecretaria ? "bg-[#4455a3]" : "bg-gray-200"}`}></div>
               <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isSecretaria ? "translate-x-full" : ""}`}></div>
             </div>
           </label>
-          <label className="flex items-center cursor-pointer">
-            <span className="mr-3 text-sm font-medium text-gray-900">Acesso de Admin</span>
+
+          <label className="flex items-center justify-between cursor-pointer">
+            <span className="font-medium text-gray-900">Acesso de Admin</span>
             <div className="relative">
               <input type="checkbox" checked={isAdmin} onChange={(e) => setIsAdmin(e.target.checked)} className="sr-only" />
               <div className={`block w-10 h-6 rounded-full transition-colors ${isAdmin ? "bg-[#4455a3]" : "bg-gray-200"}`}></div>
               <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isAdmin ? "translate-x-full" : ""}`}></div>
             </div>
           </label>
+          
+          <label className="flex items-center justify-between cursor-pointer">
+            <span className="font-medium text-gray-900">
+              Verificar usuário manualmente
+              <p className="text-xs text-gray-500 font-normal">Pula a etapa de verificação por e-mail.</p>
+            </span>
+            <div className="relative">
+              <input type="checkbox" checked={isManuallyVerified} onChange={(e) => setIsManuallyVerified(e.target.checked)} className="sr-only" />
+              <div className={`block w-10 h-6 rounded-full transition-colors ${isManuallyVerified ? "bg-green-500" : "bg-gray-200"}`}></div>
+              <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isManuallyVerified ? "translate-x-full" : ""}`}></div>
+            </div>
+          </label>
         </div>
         
-        <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-[#4455a3] text-white p-3 rounded-md shadow-sm hover:bg-[#3a488a] transition-all duration-300 transform hover:-translate-y-1 font-semibold disabled:bg-gray-400">
+        {/* 10. Botão desabilitado se o e-mail for inválido ou estiver verificando */}
+        <button 
+          type="submit" 
+          disabled={isLoading || emailCheckStatus === 'checking' || emailCheckStatus === 'invalid'} 
+          className="w-full flex justify-center items-center bg-[#4455a3] text-white p-3 rounded-md shadow-sm hover:bg-[#3a488a] transition-all duration-300 transform hover:-translate-y-1 font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
+        >
           {isLoading ? <LoadingSpinner size="sm" /> : "Cadastrar Utilizador"}
         </button>
       </form>

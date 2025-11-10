@@ -205,6 +205,19 @@ export default function App() {
     });
   }, []);
 
+  // Função de logout simples, sem confirmação (para ser usada internamente)
+  const forceLogout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("loginTimestamp");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    setIsLoggedIn(false);
+    setUser(null);
+    setUsers([]);
+    setHasFetchedUsers(false);
+  }, []);
+
   const handleLogout = useCallback(
     async (message, type = "info") => {
       const confirmed = await showConfirm("Tem certeza que deseja sair da sua conta?");
@@ -212,23 +225,18 @@ export default function App() {
         showNotification("Logout cancelado.", "info");
         return;
       }
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      localStorage.removeItem("loginTimestamp");
-      sessionStorage.removeItem("token");
-      sessionStorage.removeItem("user");
-      setIsLoggedIn(false);
-      setUser(null);
-      setUsers([]);
-      setHasFetchedUsers(false);
+      
+      forceLogout(); // Usa a função de logout simples
+
       navigate("home");
       if (message) {
         showNotification(message, type);
       }
     },
-    [navigate, showNotification, showConfirm]
+    [navigate, showNotification, showConfirm, forceLogout]
   );
 
+  // *** FUNÇÃO handleLogin ATUALIZADA ***
   const handleLogin = async (email, password, rememberMe) => {
     setGlobalLoading(true);
     try {
@@ -238,10 +246,48 @@ export default function App() {
       const storage = rememberMe ? localStorage : sessionStorage;
       storage.setItem("token", token);
       storage.setItem("user", JSON.stringify(userData));
+      
+      if (rememberMe) {
+        localStorage.setItem("loginTimestamp", new Date().getTime());
+      }
+
       setUser(userData);
       setIsLoggedIn(true);
       navigate("dashboard");
       showNotification(`Bem-vindo(a) de volta, ${userData.name.split(" ")[0]}!`, "success");
+    
+    } catch (error) {
+      // *** LÓGICA DE CATCH ATUALIZADA ***
+      // Agora o 'error' é o objeto ApiError de 'apiService.js'
+      // Verificamos o 'error.status' e o 'error.data'
+      if (error.status === 401 && error.data && error.data.needsVerification) {
+        showNotification(error.data.msg || "Por favor, verifique seu e-mail.", "info");
+        // Seta o e-mail que o usuário digitou, para já preencher a próxima tela
+        setUserEmailForVerification(email); 
+        navigate("verify-email"); // Redireciona para a verificação
+      } else {
+        // Erro 400 (Credenciais Inválidas) ou outro erro
+        showNotification(error.message, "error");
+      }
+      // Não relança o erro, pois já o tratamos
+      // throw error; 
+
+    } finally {
+      setGlobalLoading(false);
+    }
+  };
+
+  // *** NOVA FUNÇÃO (handlePublicRegister) CRIADA ***
+  const handlePublicRegister = async (registerData) => {
+    setGlobalLoading(true);
+    try {
+      // A API agora retorna { msg, email }
+      const response = await apiService.post("/api/auth/public-register", registerData);
+      
+      showNotification(response.msg || "Registro enviado! Verifique seu e-mail.", "info");
+      setUserEmailForVerification(response.email); // Seta o e-mail retornado
+      navigate("verify-email"); // Redireciona para a verificação
+    
     } catch (error) {
       showNotification(error.message, "error");
       throw error;
@@ -277,13 +323,16 @@ export default function App() {
     }
   };
 
+  // *** FUNÇÃO handleRegisterByAdmin ATUALIZADA ***
   const handleRegisterByAdmin = async (newUserData) => {
     setGlobalLoading(true);
     try {
-      await apiService.post("/api/auth/register-by-admin", newUserData);
-      showNotification("Utilizador criado com sucesso! Um email de verificação foi enviado.", "success");
+      // A API agora retorna { msg }
+      const response = await apiService.post("/api/auth/register-by-admin", newUserData);
+      showNotification(response.msg || "Utilizador criado! E-mail de verificação enviado.", "success");
       fetchUsers();
-      setUserEmailForVerification(newUserData.email);
+      // Redireciona de volta para a lista de usuários após o sucesso
+      navigate("dashboard", "users"); 
     } catch (error) {
       showNotification(error.message, "error");
       throw error;
@@ -292,15 +341,29 @@ export default function App() {
     }
   };
 
+  // *** FUNÇÃO handleProfileUpdate ATUALIZADA ***
   const handleProfileUpdate = async (updateData) => {
     setGlobalLoading(true);
     try {
       const endpoint = `/api/users/profile`;
-      const updatedUser = await apiService.put(endpoint, updateData);
-      const storage = localStorage.getItem("token") ? localStorage : sessionStorage;
-      storage.setItem("user", JSON.stringify(updatedUser));
-      setUser(updatedUser);
-      showNotification("Perfil atualizado com sucesso!", "success");
+      // Captura a resposta da API
+      const responseData = await apiService.put(endpoint, updateData);
+
+      // VERIFICA SE O E-MAIL FOI ALTERADO E REQUER REVERIFICAÇÃO
+      if (responseData.needsReverification) {
+        forceLogout(); // Desloga o usuário (sem confirmação)
+        
+        setUserEmailForVerification(responseData.email); // Seta o NOVO e-mail
+        navigate("verify-email"); // Redireciona para verificação
+        showNotification("E-mail alterado! Por favor, verifique sua nova caixa de entrada para reativar sua conta.", "info");
+
+      } else {
+        // Fluxo normal (sem alteração de e-mail)
+        const storage = localStorage.getItem("token") ? localStorage : sessionStorage;
+        storage.setItem("user", JSON.stringify(responseData));
+        setUser(responseData);
+        showNotification("Perfil atualizado com sucesso!", "success");
+      }
     } catch (error) {
       showNotification(error.message, "error");
       throw error;
@@ -341,7 +404,9 @@ export default function App() {
           setIsLoggedIn(true);
         }
       } else {
-        handleLogout("Sessão inválida. Por favor, faça login novamente.", "error");
+        // Alterado para usar forceLogout para evitar loop de confirmação
+        forceLogout();
+        showNotification("Sessão inválida. Por favor, faça login novamente.", "error");
       }
     } else {
       setIsLoggedIn(false);
@@ -349,7 +414,7 @@ export default function App() {
       setUsers([]);
       setHasFetchedUsers(false);
     }
-  }, [handleLogout, user]);
+  }, [handleLogout, user, forceLogout]); // Adicionado forceLogout
 
   useEffect(() => {
     const path = window.location.pathname;
@@ -374,6 +439,7 @@ export default function App() {
     setGlobalLoading(true);
     try {
       await service(url, data);
+      showNotification(id ? "Item atualizado com sucesso." : "Item salvo com sucesso.", "success");
       if (fetchFunction) fetchFunction();
     } catch (e) {
       showNotification(e.message, "error");
@@ -384,6 +450,11 @@ export default function App() {
   };
   
   const handleDelete = useCallback((endpoint, fetchFunction) => async (id) => {
+    const confirmed = await showConfirm("Tem a certeza de que deseja apagar este item?");
+    if (!confirmed) {
+      showNotification("Exclusão cancelada.", "info");
+      return;
+    }
     setGlobalLoading(true);
     try {
       const url = id ? `${endpoint}/${id}` : endpoint;
@@ -395,7 +466,7 @@ export default function App() {
     } finally {
       setGlobalLoading(false);
     }
-  }, [showNotification]);
+  }, [showNotification, showConfirm]);
 
   const handleGlobalSearch = useCallback((searchTerm) => {
     showNotification(`Pesquisa global por: "${searchTerm}" (Funcionalidade a ser implementada)`, "info");
@@ -407,7 +478,14 @@ export default function App() {
     }
     switch (page) {
       case "home": return <HomePage navigate={navigate} news={news} events={events} />;
-      case "register": return <RegisterPage navigate={navigate} showNotification={showNotification} setUserEmailForVerification={setUserEmailForVerification} />;
+      
+      // *** ATUALIZADO case "register" ***
+      case "register": return <RegisterPage 
+        navigate={navigate} 
+        showNotification={showNotification} 
+        handleRegister={handlePublicRegister} // Passa a nova função
+      />;
+
       case "news": return <NewsPage news={news} navigate={navigate} />;
       case "notices": return <NoticesPage notices={notices} />;
       case "news-detail":
@@ -423,6 +501,8 @@ export default function App() {
       case "login": return <LoginPage navigate={navigate} showNotification={showNotification} handleLogin={handleLogin} />;
       case "forgot-password": return <ForgotPasswordPage navigate={navigate} showNotification={showNotification} apiService={apiService} />;
       case "reset-password": return <ResetPasswordPage token={pagePayload} navigate={navigate} showNotification={showNotification} apiService={apiService} />;
+      
+      // *** ATUALIZADO case "verify-email" ***
       case "verify-email":
         return (
           <VerifyEmailPage
@@ -430,9 +510,10 @@ export default function App() {
             userEmail={userEmailForVerification}
             handleVerifyCode={handleVerifyCode}
             handleResendCode={handleResendCode}
-            showNotification={showNotification}
+            showNotification={showNotification} // Passa o showNotification
           />
         );
+      
       case "dashboard":
         if (!isLoggedIn) return <LoginPage navigate={navigate} showNotification={showNotification} handleLogin={handleLogin} />;
         const backButton = (
@@ -452,9 +533,15 @@ export default function App() {
           case "events": dashboardContent = <div>{backButton}<EventsFormFull events={events} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} /></div>; break;
           case "gallery": dashboardContent = <div>{backButton}<GalleryFormFull gallery={gallery} fetchAllData={fetchAllData} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} CustomFileInput={CustomFileInput} showConfirm={showConfirm} /></div>; break;
           case "menu": dashboardContent = <div>{backButton}<MenuFormFull menu={menuDataForComponent} showNotification={showNotification} apiService={apiService} fetchAllData={fetchAllData} /></div>; break;
-          case "schedules": dashboardContent = <div>{backButton}<SchedulesFormFull schedules={schedules} setSchedules={setSchedules} showNotification={showNotification} apiService={apiService} fetchAllData={fetchAllData} CustomFileInput={CustomFileInput} /></div>; break;
-          case "users": dashboardContent = <div>{backButton}<UserManagementFull users={users} user={user} fetchUsers={fetchUsers} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} handleRegisterByAdmin={handleRegisterByAdmin} navigate={navigate} /></div>; break;
-          case "register-user": dashboardContent = <div>{backButton}<UserRegistrationForm handleRegisterByAdmin={handleRegisterByAdmin} /></div>; break;
+          case "schedules": dashboardContent = <div>{backButton}<SchedulesFormFull schedules={schedules} setSchedules={setSchedules} showNotification={showNotification} apiService={apiService} fetchAllData={fetchAllData} CustomFileInput={CustomFileInput} showConfirm={showConfirm} /></div>; break;
+          case "users": dashboardContent = <div>{backButton}<UserManagementFull users={users} user={user} fetchUsers={fetchUsers} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} handleRegisterByAdmin={handleRegisterByAdmin} navigate={navigate} apiService={apiService} /></div>; break;
+          
+          // *** MODIFICAÇÃO APLICADA AQUI ***
+          case "register-user": dashboardContent = <div>{backButton}<UserRegistrationForm 
+            handleRegisterByAdmin={handleRegisterByAdmin} 
+            apiService={apiService} // <-- PROP ADICIONADA
+          /></div>; break;
+
           default: dashboardContent = <DashboardHome navigate={navigate} user={user} />;
         }
         return (
@@ -501,7 +588,7 @@ export default function App() {
       >
         {genericModalContent}
       </Modal>
-      {/* {isChatbotOpen && <AIChatbot onClose={() => setIsChatbotOpen(false)} />}
+      {isChatbotOpen && <AIChatbot onClose={() => setIsChatbotOpen(false)} />}
       {!isChatbotOpen && (
         <button
           onClick={() => setIsChatbotOpen(true)}
@@ -510,7 +597,7 @@ export default function App() {
         >
           <Bot size={24} />
         </button>
-      )} */}
+      )}
       <AccessibilityMenu 
         toggleContrast={toggleContrast}
         increaseFontSize={increaseFontSize}
@@ -519,4 +606,3 @@ export default function App() {
     </div>
   );
 }
-

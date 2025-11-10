@@ -68,6 +68,28 @@ const GalleryFormFull = ({ gallery, fetchAllData, handleSave, handleDelete, show
     }
   };
   
+  // *** NOVA FUNÇÃO ADICIONADA PARA EXCLUIR IMAGEM INDIVIDUAL ***
+  const handleDeleteImage = async (photo) => {
+    const confirmed = await showConfirm(`Tem a certeza de que deseja apagar esta foto do álbum "${photo.album}"?`);
+    if (confirmed) {
+      try {
+        // O handleDelete vem do hook useApi e já chama o fetchAllData e mostra notificação de erro
+        await handleDelete(`/api/gallery/${photo._id}`, fetchAllData)(); 
+        
+        // Atualiza o estado do modal em tempo real para remover a foto
+        setModalPhotos(prevPhotos => prevPhotos.filter(p => p._id !== photo._id));
+        showNotification("Foto apagada com sucesso.", "success");
+
+        // Se for a última foto do álbum, fecha o modal
+        if (modalPhotos.length === 1) {
+          handleCloseModal();
+        }
+      } catch (error) {
+        // O erro já é tratado pelo hook/função handleDelete
+      }
+    }
+  };
+
   const albums = useMemo(() => {
     const grouped = gallery.reduce((acc, photo) => {
       const album = photo.album || 'Outras Fotos';
@@ -165,11 +187,12 @@ const GalleryFormFull = ({ gallery, fetchAllData, handleSave, handleDelete, show
         )}
       </FormWrapper>
       
-      {/* Renderiza o modal fora do FormWrapper para que ele possa cobrir a tela toda */}
+      {/* Renderiza o modal e passa a nova função de exclusão */}
       <GalleryModal 
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         photos={modalPhotos}
+        onDeleteImage={handleDeleteImage} 
       />
     </>
   );

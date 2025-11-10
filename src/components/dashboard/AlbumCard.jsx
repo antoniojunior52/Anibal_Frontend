@@ -20,8 +20,8 @@ const AlbumCard = ({ albumName, photos, onView, onDelete }) => {
         {previewPhotos.map((photo, index) => (
           <div key={photo._id || index} className="aspect-square bg-gray-100">
             <img
-              // 2. CORREÇÃO APLICADA: Usa API_URL e o campo 'url'
-              src={photo.url ? `${API_URL}${photo.url}` : placeholderImage}
+              // 2. CORREÇÃO DE PERFORMANCE: Usa thumbnailUrl se existir, senão usa a url principal.
+              src={(photo.thumbnailUrl || photo.url) ? `${API_URL}${photo.thumbnailUrl || photo.url}` : placeholderImage}
               alt={`Preview ${index + 1} for ${albumName}`}
               className="w-full h-full object-cover"
               onError={(e) => { e.target.onerror = null; e.target.src = placeholderImage; }}
@@ -36,6 +36,15 @@ const AlbumCard = ({ albumName, photos, onView, onDelete }) => {
         <div className="flex justify-between items-center mt-2">
           <span className="text-sm text-gray-500">{photos.length} foto{photos.length !== 1 ? 's' : ''}</span>
           <div className="flex items-center space-x-1">
+            {/* BOTÃO DE VISUALIZAR ÁLBUM ADICIONADO */}
+            <button
+              onClick={() => onView(photos)}
+              className="text-gray-500 p-2 rounded-full hover:bg-sky-100 hover:text-sky-600 transition-colors"
+              aria-label={`Visualizar álbum ${albumName}`}
+              title="Visualizar Álbum"
+            >
+              <Eye size={18} />
+            </button>
             <button
               onClick={() => onDelete(albumName)}
               className="text-gray-500 p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors"

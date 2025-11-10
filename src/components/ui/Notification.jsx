@@ -3,18 +3,24 @@ import { X } from "lucide-react";
 
 const Notification = ({ message, type, onClose }) => {
   if (!message) return null;
+
+  // 1. Consolidei todos os estilos em um único objeto
   const typeStyles = {
-    success: "bg-green-400",
-    error: "bg-red-500",
-    info: "bg-[#4455a3]",
+    success: "bg-green-400 text-black", 
+    error: "bg-red-500 text-white",     
+    info: "bg-[#4455a3] text-white",  
   };
+
+  // 2. Determinei as classes de estilo (com um padrão seguro)
+  const styleClasses = typeStyles[type] || "bg-gray-500 text-white";
+
   return (
+    // 3. Apliquei tudo em UM ÚNICO 'className'
     <div
-      className={`fixed top-5 right-5 z-50 flex items-center p-4 rounded-lg shadow-lg text-black font-bold transition-all duration-300 transform ${
-        typeStyles[type]
-      } ${
-        message ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
-      }`}
+      className={`fixed top-5 right-5 z-50 flex items-center p-4 rounded-lg shadow-lg font-bold transition-all duration-300 transform 
+        ${styleClasses} 
+        ${message ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}
+      `}
     >
       <span className="flex-grow">{message}</span>
       <button
