@@ -597,7 +597,7 @@ export default function App() {
         >
           <Bot size={24} />
         </button>
-      )}
+      )} 
       <AccessibilityMenu 
         toggleContrast={toggleContrast}
         increaseFontSize={increaseFontSize}
