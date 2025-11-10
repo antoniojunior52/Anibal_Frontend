@@ -8,11 +8,10 @@ import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [role, setRole] = useState("Professor(a)");
   const [isSecretaria, setIsSecretaria] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isManuallyVerified, setIsManuallyVerified] = useState(false);
+  // const [isManuallyVerified, setIsManuallyVerified] = useState(false); // <-- REMOVIDO
   const [isLoading, setIsLoading] = useState(false);
 
   // 2. Novos estados para verificação de e-mail
@@ -20,9 +19,9 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
   const [emailCheckMessage, setEmailCheckMessage] = useState('');
 
   const resetForm = () => {
-    setName(""); setEmail(""); setPassword("");
+    setName(""); setEmail("");
     setRole("Professor(a)"); setIsSecretaria(false); setIsAdmin(false);
-    setIsManuallyVerified(false);
+    // setIsManuallyVerified(false); // <-- REMOVIDO
     // 3. Reseta os novos estados
     setEmailCheckStatus('idle');
     setEmailCheckMessage('');
@@ -61,12 +60,17 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
     
     setIsLoading(true);
     try {
+      // 6. 'isManuallyVerified' agora está fixo como 'true'
       await handleRegisterByAdmin({ 
-        name, email, password, role, isSecretaria, isAdmin, isManuallyVerified 
+        name, 
+        email, 
+        role, 
+        isSecretaria, 
+        isAdmin, 
+        isManuallyVerified: true 
       });
       resetForm();
     } catch (error) {
-      // O erro já é notificado pela função pai (App.js)
     } finally {
       setIsLoading(false);
     }
@@ -77,24 +81,22 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <FloatingLabelInput id="register-admin-name" label="Nome Completo" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
         
-        {/* 6. Wrapper para o Input de E-mail e o Feedback */}
+        {/* Wrapper para o Input de E-mail e o Feedback */}
         <div>
           <FloatingLabelInput 
             id="register-admin-email" 
             label="Email" 
             type="email" 
             value={email} 
-            // 7. Reseta o status ao digitar
             onChange={(e) => {
               setEmail(e.target.value);
-              setEmailCheckStatus('idle'); // Reseta ao digitar
+              setEmailCheckStatus('idle');
               setEmailCheckMessage('');
             }}
-            // 8. Verifica ao sair do campo
             onBlur={handleEmailBlur}
             required 
           />
-          {/* 9. Feedback visual da verificação */}
+          {/* Feedback visual da verificação */}
           <div className="h-5 mt-1 ml-1 text-sm">
             {emailCheckStatus === 'checking' && (
               <span className="flex items-center text-gray-500 animate-pulse">
@@ -113,8 +115,6 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
             )}
           </div>
         </div>
-
-        <FloatingLabelInput id="register-admin-password" label="Senha Provisória" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         
         <div>
           <label htmlFor="register-admin-role" className="block text-sm font-medium text-gray-700 mb-1">Função</label>
@@ -152,20 +152,8 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
             </div>
           </label>
           
-          <label className="flex items-center justify-between cursor-pointer">
-            <span className="font-medium text-gray-900">
-              Verificar usuário manualmente
-              <p className="text-xs text-gray-500 font-normal">Pula a etapa de verificação por e-mail.</p>
-            </span>
-            <div className="relative">
-              <input type="checkbox" checked={isManuallyVerified} onChange={(e) => setIsManuallyVerified(e.target.checked)} className="sr-only" />
-              <div className={`block w-10 h-6 rounded-full transition-colors ${isManuallyVerified ? "bg-green-500" : "bg-gray-200"}`}></div>
-              <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isManuallyVerified ? "translate-x-full" : ""}`}></div>
-            </div>
-          </label>
         </div>
         
-        {/* 10. Botão desabilitado se o e-mail for inválido ou estiver verificando */}
         <button 
           type="submit" 
           disabled={isLoading || emailCheckStatus === 'checking' || emailCheckStatus === 'invalid'} 

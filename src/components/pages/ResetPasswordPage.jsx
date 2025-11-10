@@ -39,9 +39,10 @@ const ResetPasswordPage = ({ navigate, showNotification, apiService, token }) =>
       const { msg } = await apiService.put(`/api/auth/reset-password/${token}`, { password });
       showNotification(msg, "success");
       
-      // *** MODIFICAÇÃO APLICADA AQUI ***
-      // Redireciona para a 'home' (http://localhost:3000) em vez de 'login'
-      navigate("home");
+      // Esta chamada está correta. 
+      // Ela vai acionar a nova função 'navigate' no App.js, 
+      // que vai trocar o estado para "home" E atualizar a URL para "/".
+      navigate("home"); 
 
     } catch (error) {
       showNotification(error.message, "error");
@@ -75,9 +76,10 @@ const ResetPasswordPage = ({ navigate, showNotification, apiService, token }) =>
             <FloatingLabelInput
               id="confirm-new-password"
               label="Confirmar Nova Senha"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.targe.value)}
+              // Correção do erro de digitação (e.targe -> e.target)
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               onFocus={() => setIsPasswordFocused(true)}
               onBlur={() => setIsPasswordFocused(false)}

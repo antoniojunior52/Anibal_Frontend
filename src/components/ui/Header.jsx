@@ -24,7 +24,7 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
             onKeyPress={(e) => { if (e.key === 'Enter') onNavigate('home'); }}
           >
             <img
-              src="./logo.jpg"
+              src="/logo.jpg"
               alt="Logo da Escola E.E Profº Anibal do Prado e Silva"
               className="rounded-full w-12 h-12 sm:w-16 sm:h-16 object-cover"
             />
