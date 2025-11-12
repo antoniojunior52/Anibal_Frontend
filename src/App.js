@@ -192,6 +192,9 @@ export default function App() {
     window.scrollTo(0, 0);
     setPage(targetPage);
     setPagePayload(payload);
+
+    const path = targetPage === "home" ? "/" : `/${targetPage}`;
+    window.history.pushState({ page: targetPage }, "", path);
   }, []);
 
   const showConfirm = useCallback((message) => {
