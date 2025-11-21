@@ -1,7 +1,9 @@
 import React from "react";
 import AnimatedCard from "./AnimatedCard";
 
+// Card interativo do painel principal. Recebe ícone, título, ação de clique e cor.
 const DashboardCard = ({ icon, title, onClick, color }) => {
+  // Objeto que mapeia as cores disponíveis para classes do Tailwind (borda, fundo, texto)
   const colorStyles = {
     indigo: {
       border: "border-indigo-500",
@@ -51,14 +53,18 @@ const DashboardCard = ({ icon, title, onClick, color }) => {
         text: "text-[#4455a3]",
     }
   };
+  
+  // Seleciona o estilo baseada na prop 'color'. Se não achar, usa 'blue' como padrão.
   const styles = colorStyles[color] || colorStyles.blue;
+  
   return (
     <AnimatedCard>
       <div
-        onClick={onClick}
+        onClick={onClick} // Executa a função passada quando o card é clicado
         className={`bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer text-center h-full flex flex-col items-center justify-center border-b-4 ${styles.border}`}
       >
         <div className={`flex items-center justify-center h-16 w-16 rounded-full mx-auto mb-4 ${styles.bg} ${styles.text}`}>
+          {/* Renderiza o ícone passado por prop e força o tamanho dele para 40 */}
           {React.cloneElement(icon, { size: 40 })}
         </div>
         <h3 className="text-xl font-semibold text-gray-800">{title}</h3>

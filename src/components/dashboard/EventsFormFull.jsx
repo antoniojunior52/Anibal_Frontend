@@ -5,13 +5,15 @@ import FloatingLabelInput from "../ui/FloatingLabelInput";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import EventCard from "./EventCard"; // Importa o novo componente de Card
 
+// Formulário de Gerenciamento de Eventos
+// Permite criar, editar e excluir eventos do calendário
 const EventsFormFull = ({ events, fetchAllData, handleSave, handleDelete, showNotification }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("list");
   const [date, setDate] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [editing, setEditing] = useState(null);
+  const [editing, setEditing] = useState(null); // Guarda o evento sendo editado (se houver)
   const [isLoading, setIsLoading] = useState(false);
 
   const resetForm = () => {
@@ -23,19 +25,22 @@ const EventsFormFull = ({ events, fetchAllData, handleSave, handleDelete, showNo
     setActiveTab("form");
   };
   
+  // Preenche o formulário com os dados do evento selecionado para edição
   const handleEdit = (item) => {
     setEditing(item);
-    setDate(item.date.split("T")[0]);
+    setDate(item.date.split("T")[0]); // Formata a data para o input
     setTitle(item.title);
     setDescription(item.description);
     setActiveTab("form");
     window.scrollTo(0, 0);
   };
 
+  // Salva (cria ou atualiza) o evento
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      // handleSave decide se é POST (novo) ou PUT (edição) baseado no 2º argumento (ID)
       await handleSave("/api/events", fetchAllData)({ date, title, description }, editing?._id);
       resetForm();
       showNotification("Evento salvo!", "success");
@@ -52,6 +57,7 @@ const EventsFormFull = ({ events, fetchAllData, handleSave, handleDelete, showNo
 
   return (
     <FormWrapper title="Gerir Eventos" icon={<PartyPopper className="mr-2 text-pink-500" />}>
+      {/* Abas de Navegação */}
       <div className="flex border-b border-gray-200 mb-6">
         <button onClick={() => setActiveTab("list")} className={tabClasses("list")}>
           <List size={18} className="mr-2" />
@@ -63,6 +69,7 @@ const EventsFormFull = ({ events, fetchAllData, handleSave, handleDelete, showNo
         </button>
       </div>
 
+      {/* Formulário de Cadastro/Edição */}
       {activeTab === "form" && (
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
           <FloatingLabelInput id="event-date" label="Data do Evento" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
@@ -82,6 +89,7 @@ const EventsFormFull = ({ events, fetchAllData, handleSave, handleDelete, showNo
         </form>
       )}
 
+      {/* Lista de Eventos */}
       {activeTab === "list" && (
         <div className="animate-fade-in">
           <div className="relative mb-8">
@@ -98,6 +106,7 @@ const EventsFormFull = ({ events, fetchAllData, handleSave, handleDelete, showNo
           </div>
 
           {(() => {
+            // Ordena por data e filtra pela busca
             const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
             const filteredEvents = sortedEvents.filter(item =>
               item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

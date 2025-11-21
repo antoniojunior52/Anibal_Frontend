@@ -1,7 +1,7 @@
 import React from 'react';
 import { Trash2, UserCircle } from 'lucide-react';
 
-// Função para formatar a data de forma amigável
+// Função auxiliar para formatar a data do recado de forma amigável (ex: "Hoje às 14:00")
 const formatNoticeDate = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
@@ -20,15 +20,15 @@ const formatNoticeDate = (dateString) => {
   return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' }) + ` às ${time}`;
 };
 
+// Item individual da lista de recados no painel admin
 const NoticeItem = ({ notice, user, onDelete }) => {
-  // Garante que o autor e o nome existam para evitar erros
   const authorName = notice.author?.name || 'Autor desconhecido';
   const formattedDate = notice.createdAt ? formatNoticeDate(notice.createdAt) : '';
 
   return (
     <div className="bg-white p-4 rounded-xl border border-gray-200 transition-shadow hover:shadow-lg">
       <div className="flex justify-between items-start">
-        {/* Conteúdo do Recado */}
+        {/* Conteúdo e Metadados */}
         <div className="flex-grow pr-4">
           <p className="text-gray-800 whitespace-pre-wrap">{notice.content}</p>
           <div className="flex items-center text-xs text-gray-500 mt-3">
@@ -37,7 +37,7 @@ const NoticeItem = ({ notice, user, onDelete }) => {
           </div>
         </div>
         
-        {/* Botão de Excluir (visível apenas para admin) */}
+        {/* Botão de Excluir (Apenas Admins podem ver) */}
         {user?.isAdmin && (
           <div className="flex-shrink-0">
             <button

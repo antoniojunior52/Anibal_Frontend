@@ -1,16 +1,17 @@
 import React from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 
+// Componente que representa um único item na Timeline de História
 const HistoryTimelineItem = ({ item, onEdit, onDelete }) => {
   return (
     <div className="relative pl-10 pr-4 py-4">
-      {/* O Ponto e a Linha da Timeline */}
+      {/* Desenho da linha vertical e do ponto da timeline */}
       <div className="absolute left-0 top-5 h-full">
         <div className="absolute left-0 top-1 w-5 h-5 bg-white border-4 border-yellow-500 rounded-full z-10"></div>
         <div className="absolute left-[9px] top-3 w-0.5 h-full bg-gray-200"></div>
       </div>
       
-      {/* Conteúdo do Marco Histórico */}
+      {/* Card com o conteúdo do marco histórico */}
       <div className="relative bg-white p-5 rounded-xl border border-gray-200 transition-shadow hover:shadow-lg">
         <div className="flex justify-between items-start">
           <div>
@@ -18,6 +19,7 @@ const HistoryTimelineItem = ({ item, onEdit, onDelete }) => {
             <h3 className="text-lg font-bold text-gray-900 mt-1">{item.title}</h3>
             <p className="text-gray-600 mt-2">{item.description}</p>
           </div>
+          {/* Ações de Editar e Excluir */}
           <div className="flex items-center space-x-1 flex-shrink-0 ml-4">
             <button
               onClick={() => onEdit(item)}

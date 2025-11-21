@@ -4,22 +4,26 @@ import { UserCog, PlusCircle, List, Search } from "lucide-react";
 import Pagination from "../ui/Pagination";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import UserListItem from "./UserListItem";
-import UserRegistrationForm from "./UserRegistrationForm"; // 1. Importar o formulário de cadastro
+import UserRegistrationForm from "./UserRegistrationForm"; 
 
-// 2. Receber 'apiService' (para a verificação de e-mail no formulário de registro)
+// Componente principal para Gerenciamento de Usuários (Admin)
+// Lista usuários, permite buscar, paginar, alterar permissões e deletar
 const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete, showNotification, handleRegisterByAdmin, apiService, navigate }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("list");
+  const [activeTab, setActiveTab] = useState("list"); // Alterna entre Lista e Cadastro
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const itemsPerPage = 5;
 
+  // Altera permissões (Admin/Secretaria) diretamente na lista
   const handlePermissionChange = async (userId, field, value) => {
+    // Impede que o admin remova seu próprio acesso de admin
     if (userId === user.id && field === "isAdmin" && !value) {
       showNotification("Não pode remover o seu próprio acesso de Admin.", "error"); return;
     }
     setLoading(true);
     try {
+      // Envia atualização parcial (PATCH logic)
       await handleSave("/api/users", fetchUsers)({ [field]: value }, userId);
       showNotification("Permissões do utilizador atualizadas!", "success");
     } catch (e) {
@@ -29,36 +33,31 @@ const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete,
     }
   };
 
-  // 3. *** CORREÇÃO DO ALERTA DE EXCLUSÃO ***
+  // Chama a função de deletar (que já possui confirmação)
   const handleDeleteUser = async (userId) => {
-    // REMOVIDO: O 'window.confirm'
-    // A prop 'handleDelete' (vinda do App.js) JÁ TEM o modal de confirmação embutido.
-    // Basta chamá-la diretamente.
     await handleDelete("/api/users", fetchUsers)(userId);
   };
 
-  // 4. Função para cadastrar E VOLTAR para a lista
-  // (A lógica de 'navigate' foi movida do App.js para cá)
+  // Cadastra usuário novo e volta para a aba de lista
   const handleRegisterAndSwitchTab = async (userData) => {
-    // Tenta registrar o utilizador
     await handleRegisterByAdmin(userData);
-    
-    // A lógica em 'handleRegisterByAdmin' (no App.js) já atualiza a lista via 'fetchUsers'.
-    // Agora, apenas mudamos de aba.
     setActiveTab('list');
   };
 
+  // Filtra usuários por nome ou email
   const filteredUsers = useMemo(() => 
     users.filter(u =>
       u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.email.toLowerCase().includes(searchQuery.toLowerCase())
     ), [users, searchQuery]);
 
+  // Lógica de paginação
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const currentUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
   
+  // Volta para a página 1 se a busca mudar
   useState(() => { setCurrentPage(1); }, [searchQuery]);
 
   const tabClasses = (tabName) => `flex items-center justify-center w-full px-4 py-3 font-semibold transition-all duration-300 border-b-2
@@ -66,6 +65,7 @@ const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete,
 
   return (
     <FormWrapper title="Gerir Utilizadores" icon={<UserCog className="mr-2 text-yellow-500" />}>
+      {/* Abas de Navegação */}
       <div className="flex border-b border-gray-200 mb-6">
         <button onClick={() => setActiveTab("list")} className={tabClasses("list")}>
           <List size={18} className="mr-2" />
@@ -77,17 +77,19 @@ const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete,
         </button>
       </div>
 
-      {/* 5. Renderizar o formulário e PASSAR 'apiService' para a verificação de e-mail */}
+      {/* Formulário de Cadastro */}
       {activeTab === 'form' && (
         <UserRegistrationForm 
           handleRegisterByAdmin={handleRegisterAndSwitchTab} 
-          apiService={apiService} // <-- PROP ADICIONADA
+          apiService={apiService} 
         />
       )}
 
+      {/* Lista de Usuários */}
       {activeTab === 'list' && (
         <div className="animate-fade-in">
           {loading && <LoadingSpinner message="A atualizar permissões..." />}
+          {/* Barra de Busca */}
           <div className="relative mb-8">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3"><Search className="h-5 w-5 text-gray-400" /></span>
             <input type="text" placeholder="Buscar por nome ou email..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition" />
@@ -99,7 +101,7 @@ const UserManagementFull = ({ users, user, fetchUsers, handleSave, handleDelete,
                 <UserListItem 
                   key={u._id} userItem={u} currentUser={user}
                   onPermissionChange={handlePermissionChange} 
-                  onDelete={handleDeleteUser} // <-- Esta é a função que corrigimos
+                  onDelete={handleDeleteUser} 
                 />
               ))
             ) : (

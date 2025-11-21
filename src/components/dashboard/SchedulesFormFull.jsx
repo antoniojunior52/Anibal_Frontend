@@ -5,9 +5,12 @@ import FileUpload from "../ui/FileUpload";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import ScheduleItem from "./ScheduleItem";
 
-// 1. ADICIONADO 'showConfirm' ÀS PROPS
+// Formulário de Gerenciamento de Horários (Upload Excel)
+// 1. ADICIONADO 'showConfirm' ÀS PROPS para usar o modal personalizado
 const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllData, showConfirm }) => {
+  // Lista fixa de turmas disponíveis
   const classList = ["6º Ano A", "6º Ano B", "6º Ano C", "7º Ano A", "7º Ano B", "8º Ano A", "8º Ano B", "9º Ano A", "9º Ano B"];
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("list");
   const [file, setFile] = useState(null);
@@ -26,6 +29,7 @@ const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllDa
     setActiveTab("form");
   };
 
+  // Envia o arquivo Excel para a API
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!scheduleClass || !file) {
@@ -49,12 +53,9 @@ const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllDa
     }
   };
 
-  // 2. FUNÇÃO 'handleDeleteSchedule' ATUALIZADA
+  // 2. FUNÇÃO 'handleDeleteSchedule' ATUALIZADA para usar showConfirm
   const handleDeleteSchedule = async (className) => {
-    // Linha antiga (removida):
-    // const confirmed = window.confirm(`Tem a certeza que quer apagar o horário de ${className}?`);
-    
-    // Nova linha (usando o modal):
+    // Abre o modal de confirmação personalizado em vez do window.confirm nativo
     const confirmed = await showConfirm(`Tem a certeza que quer apagar o horário de ${className}?`);
 
     if (confirmed) {
@@ -73,6 +74,7 @@ const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllDa
 
   return (
     <FormWrapper title="Gerir Horários" icon={<FileSpreadsheet className="mr-2 text-green-500" />}>
+      {/* Navegação por Abas */}
       <div className="flex border-b border-gray-200 mb-6">
         <button onClick={() => setActiveTab("list")} className={tabClasses("list")}>
           <List size={18} className="mr-2" />
@@ -84,6 +86,7 @@ const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllDa
         </button>
       </div>
 
+      {/* Formulário de Upload */}
       {activeTab === 'form' && (
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
           <div>
@@ -107,15 +110,17 @@ const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllDa
             </div>
           </div>
 
+          {/* Aviso se já existe horário para a turma selecionada */}
           {schedules[scheduleClass] && (
             <p className="text-sm text-center text-amber-700 bg-amber-100 p-2 rounded-md">Atenção: A turma selecionada já possui um horário. O envio de um novo arquivo irá substituí-lo.</p>
           )}
           <FileUpload key={resetKey} label="Arquivo Excel do Horário" onChange={setFile} allowedTypes={["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel"]} fileTypeName="Excel" />
           <div className="flex flex-col sm:flex-row gap-4">
-            {/* CORREÇÃO AQUI: 'text-white' alterado para 'text-black' */}
+            {/* Botão Cancelar */}
             <button type="button" onClick={() => setActiveTab("list")} className="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600">
               Cancelar
             </button>
+            {/* Botão Salvar */}
             <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-green-500 text-black p-3 rounded-md shadow-sm hover:bg-green-600 transition-colors disabled:bg-gray-400 font-semibold">
               {isLoading ? <LoadingSpinner size="sm" /> : "Salvar Horário"}
             </button>
@@ -123,6 +128,7 @@ const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllDa
         </form>
       )}
 
+      {/* Lista de Horários */}
       {activeTab === 'list' && (
         <div className="animate-fade-in">
           <div className="relative mb-8">
@@ -162,7 +168,6 @@ const SchedulesFormFull = ({ schedules, showNotification, apiService, fetchAllDa
             return (
               <div className="text-center py-10 px-4 border-2 border-dashed rounded-lg">
                 <p className="text-gray-500">Nenhum horário cadastrado.</p>
-                {/* CORREÇÃO AQUI: 'text-white' alterado para 'text-black' */}
                 <button onClick={handleAddNew} className="mt-4 bg-green-500 text-black font-semibold py-2 px-4 rounded-md shadow-sm hover:bg-green-600 transition-all">
                   <PlusCircle size={18} className="inline mr-2" />
                   Cadastrar primeiro horário

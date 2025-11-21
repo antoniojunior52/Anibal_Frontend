@@ -2,11 +2,13 @@
 import React, { useState, useCallback } from 'react';
 import { UploadCloud, X, AlertCircle, File as FileIcon } from 'lucide-react';
 
+// Componente genérico de Upload de arquivo (com suporte a arrastar e soltar)
 export default function FileUpload({ label, onChange, maxSizeMB = 10, allowedTypes, fileTypeName }) {
-  const [file, setFile] = useState(null);
-  const [error, setError] = useState('');
-  const [isDragging, setIsDragging] = useState(false);
+  const [file, setFile] = useState(null); // O arquivo selecionado
+  const [error, setError] = useState(''); // Mensagem de erro
+  const [isDragging, setIsDragging] = useState(false); // Estado visual de "arrastando arquivo por cima"
 
+  // Valida tamanho e tipo do arquivo
   const validateFile = (fileToValidate) => {
     if (fileToValidate.size > maxSizeMB * 1024 * 1024) {
       setError(`O ficheiro excede o tamanho máximo de ${maxSizeMB}MB.`);
@@ -20,16 +22,18 @@ export default function FileUpload({ label, onChange, maxSizeMB = 10, allowedTyp
     return true;
   };
   
+  // Executado quando um arquivo é escolhido ou solto na área
   const handleFileChange = useCallback((selectedFile) => {
     if (selectedFile && validateFile(selectedFile)) {
       setFile(selectedFile);
-      onChange(selectedFile);
+      onChange(selectedFile); // Envia o arquivo para o componente pai
     } else {
       setFile(null);
       onChange(null);
     }
   }, [maxSizeMB, allowedTypes, fileTypeName, onChange]);
 
+  // Remove o arquivo selecionado
   const removeFile = () => {
     setFile(null);
     onChange(null);
@@ -40,6 +44,7 @@ export default function FileUpload({ label, onChange, maxSizeMB = 10, allowedTyp
     <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
         {file ? (
+            // Visualização se JÁ tem arquivo selecionado
             <div className="flex items-center justify-between p-3 border rounded-md bg-gray-50">
                 <div className="flex items-center gap-3">
                     <FileIcon className="h-6 w-6 text-gray-500" />
@@ -49,13 +54,21 @@ export default function FileUpload({ label, onChange, maxSizeMB = 10, allowedTyp
             </div>
         ) : (
             <>
-            <div onDrop={(e) => { e.preventDefault(); handleFileChange(e.dataTransfer.files[0]); setIsDragging(false); }} onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} className={`relative block w-full border-2 border-dashed ${isDragging ? 'border-blue-500' : 'border-gray-300'} rounded-md p-4 text-center cursor-pointer`}>
+            {/* Área de Upload (Drag & Drop) */}
+            <div 
+                onDrop={(e) => { e.preventDefault(); handleFileChange(e.dataTransfer.files[0]); setIsDragging(false); }} 
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }} 
+                onDragLeave={() => setIsDragging(false)} 
+                className={`relative block w-full border-2 border-dashed ${isDragging ? 'border-blue-500' : 'border-gray-300'} rounded-md p-4 text-center cursor-pointer`}
+            >
+                {/* Input invisível que cobre a área toda */}
                 <input type="file" className="absolute inset-0 w-full h-full opacity-0" onChange={(e) => handleFileChange(e.target.files[0])} accept={allowedTypes?.join(',')} />
                 <div className="flex flex-col items-center justify-center h-24">
                     <UploadCloud className="mx-auto h-10 w-10 text-gray-400" />
                     <p className="text-sm text-gray-600"><span className="font-semibold text-blue-600">Clique para enviar</span> ou arraste o ficheiro</p>
                 </div>
             </div>
+            {/* Exibe erro, se houver */}
             {error && <p className="mt-2 text-sm text-red-600 flex items-center"><AlertCircle size={16} className="mr-1" />{error}</p>}
             </>
         )}

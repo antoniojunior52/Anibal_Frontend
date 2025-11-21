@@ -6,40 +6,51 @@ import Pagination from "../ui/Pagination";
 import SearchBar from "../ui/SearchBar";
 import { API_URL } from "../../App";
 
+// Página de Lista de Notícias (com filtro e pesquisa)
 const NewsPage = ({ news, navigate }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
 
+  // Filtra as notícias em tempo real (por texto ou data) sem alterar o array original
+  // O useMemo evita reprocessamento desnecessário se nada mudar
   const filteredNews = useMemo(() => {
     return news.filter(item => {
       const newsDate = new Date(item.date);
-      newsDate.setHours(0, 0, 0, 0);
+      newsDate.setHours(0, 0, 0, 0); // Zera hora para comparar apenas a data
+      
       const selectedFilterDate = filterDate ? new Date(filterDate) : null;
       if (selectedFilterDate) {
         selectedFilterDate.setHours(0, 0, 0, 0);
       }
+      
+      // Critérios de filtro
       const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             item.content.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDate = !selectedFilterDate || newsDate >= selectedFilterDate;
+      
       return matchesSearch && matchesDate;
     });
   }, [news, searchTerm, filterDate]);
 
+  // Lógica de paginação
   const itemsPerPage = 6;
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentNews = filteredNews.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
 
+  // Handlers de interação
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+  
   const handleSearch = (term) => {
     setSearchTerm(term);
-    setCurrentPage(1);
+    setCurrentPage(1); // Volta para a página 1 ao pesquisar
   };
+  
   const handleFilterDateChange = (e) => {
     setFilterDate(e.target.value);
-    setCurrentPage(1);
+    setCurrentPage(1); // Volta para a página 1 ao filtrar
   };
 
   return (
@@ -49,7 +60,8 @@ const NewsPage = ({ news, navigate }) => {
         subtitle="Acompanhe os últimos acontecimentos da nossa nossa comunidade escolar."
       />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        {/* ... (código dos filtros de pesquisa e data) ... */}
+        
+        {/* Barra de Filtros */}
         <div className="bg-white p-4 rounded-lg shadow-sm mb-8 border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-700 mb-4 sr-only">Opções de Filtro</h3>
           <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -64,6 +76,7 @@ const NewsPage = ({ news, navigate }) => {
           </div>
         </div>
 
+        {/* Grid de Notícias */}
         {currentNews.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
             {currentNews.map((item) => (
@@ -77,7 +90,6 @@ const NewsPage = ({ news, navigate }) => {
                     <h3 className="text-xl font-bold text-gray-800 mb-3 flex-grow group-hover:text-[#4455a3] transition-colors">
                       {item.title}
                     </h3>
-                    {/* ATUALIZAÇÃO AQUI: Removemos o substring e usamos classes CSS para limitar o texto a 3 linhas */}
                     <p className="text-gray-600 line-clamp-3">
                       {item.content}
                     </p>
@@ -89,6 +101,7 @@ const NewsPage = ({ news, navigate }) => {
         ) : (
           <p className="text-center text-gray-500" role="status" aria-live="polite">Nenhuma notícia encontrada com os critérios de pesquisa/filtro.</p>
         )}
+        {/* Paginação */}
         {totalPages > 1 && (
           <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
         )}

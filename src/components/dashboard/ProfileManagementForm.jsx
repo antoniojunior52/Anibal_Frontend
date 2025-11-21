@@ -6,27 +6,34 @@ import PasswordStrengthMeter from '../ui/PasswordStrengthMeter';
 import { AnimatePresence } from 'framer-motion';
 import LoadingSpinner from "../ui/LoadingSpinner";
 
+// Formulário de Gerenciamento de Perfil (Meus Dados)
+// Permite ao usuário logado alterar nome, email e senha
 const ProfileManagementForm = ({ user, handleProfileUpdate, handleChangePassword, showNotification }) => {
-  // Estado para controlar a aba ativa
+  // Estado para controlar a aba ativa (Informações vs Senha)
   const [activeTab, setActiveTab] = useState("info");
 
-  // Estados para o formulário de informações
+  // Estados para o formulário de informações básicas
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [loadingInfo, setLoadingInfo] = useState(false);
 
-  // Estados para o formulário de senha
+  // Estados para o formulário de alteração de senha
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [loadingPassword, setLoadingPassword] = useState(false);
+  
+  // Controles visuais (mostrar/ocultar senha e foco)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  
+  // Validações de força da senha
   const [validations, setValidations] = useState({
     minLength: false, hasUpper: false, hasLower: false, hasNumber: false, passwordsMatch: false,
   });
 
+  // Atualiza validações sempre que a senha muda
   useEffect(() => {
     setValidations({
       minLength: newPassword.length >= 8,
@@ -39,6 +46,7 @@ const ProfileManagementForm = ({ user, handleProfileUpdate, handleChangePassword
 
   const isNewPasswordValid = Object.values(validations).every(Boolean);
 
+  // Envia atualização de nome/email
   const handleInfoSubmit = async (e) => {
     e.preventDefault();
     setLoadingInfo(true);
@@ -49,6 +57,7 @@ const ProfileManagementForm = ({ user, handleProfileUpdate, handleChangePassword
     }
   };
 
+  // Envia atualização de senha
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     if (!isNewPasswordValid) {
@@ -58,6 +67,7 @@ const ProfileManagementForm = ({ user, handleProfileUpdate, handleChangePassword
     setLoadingPassword(true);
     try {
       await handleChangePassword({ currentPassword, newPassword });
+      // Limpa os campos após sucesso
       setCurrentPassword("");
       setNewPassword("");
       setConfirmNewPassword("");
@@ -100,12 +110,15 @@ const ProfileManagementForm = ({ user, handleProfileUpdate, handleChangePassword
       {activeTab === 'password' && (
         <div className="animate-fade-in">
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            {/* Senha Atual */}
             <div className="relative password-input-wrapper">
               <FloatingLabelInput id="current-password" label="Senha Atual" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
               <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
                 {showCurrentPassword ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
             </div>
+            
+            {/* Nova Senha */}
             <div className="relative password-input-wrapper">
               <FloatingLabelInput id="new-password" label="Nova Senha" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} onFocus={() => setIsPasswordFocused(true)} onBlur={() => setIsPasswordFocused(false)} required />
               <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
@@ -113,8 +126,10 @@ const ProfileManagementForm = ({ user, handleProfileUpdate, handleChangePassword
               </button>
             </div>
             
+            {/* Confirmar Nova Senha */}
             <FloatingLabelInput id="confirm-new-password" label="Confirmar Nova Senha" type="password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} onFocus={() => setIsPasswordFocused(true)} onBlur={() => setIsPasswordFocused(false)} required />
             
+            {/* Medidor de Força */}
             <AnimatePresence>
               {(isPasswordFocused || newPassword.length > 0) && (
                 <PasswordStrengthMeter validations={validations} />

@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X } from 'lucide-react';
 
-// Subcomponente para cada item da lista
+// Subcomponente para exibir cada regra de senha (ex: "Mínimo 8 caracteres") com ícone de V ou X
 const ValidationItem = ({ isValid, text }) => {
   return (
     <motion.li
@@ -13,9 +12,11 @@ const ValidationItem = ({ isValid, text }) => {
       exit={{ opacity: 0, y: -10 }}
       className="flex items-center text-sm"
     >
+      {/* Muda a cor do ícone: Verde se válido, Cinza se inválido */}
       <motion.div animate={{ color: isValid ? '#22c55e' : '#6b7280' }}>
         {isValid ? <Check size={16} className="mr-2 flex-shrink-0" /> : <X size={16} className="mr-2 flex-shrink-0" />}
       </motion.div>
+      {/* Muda a cor do texto */}
       <motion.span animate={{ color: isValid ? '#1f2937' : '#6b7280' }}>
         {text}
       </motion.span>
@@ -23,9 +24,12 @@ const ValidationItem = ({ isValid, text }) => {
   );
 };
 
+// Componente principal que mostra a força da senha e a lista de requisitos
 export default function PasswordStrengthMeter({ validations }) {
+  // Conta quantas regras foram cumpridas (true)
   const strength = Object.values(validations).filter(Boolean).length;
 
+  // Define a cor da barra de progresso baseada na pontuação (0 a 5)
   const strengthColors = {
     0: 'bg-gray-200',
     1: 'bg-red-500',
@@ -35,6 +39,7 @@ export default function PasswordStrengthMeter({ validations }) {
     5: 'bg-green-500',
   };
 
+  // Define o texto descritivo da força
   const strengthText = {
     0: '',
     1: 'Muito Fraca',
@@ -44,6 +49,7 @@ export default function PasswordStrengthMeter({ validations }) {
     5: 'Forte',
   };
 
+  // Calcula a largura da barra em porcentagem
   const barWidth = `${(strength / 5) * 100}%`;
 
   return (
@@ -53,7 +59,9 @@ export default function PasswordStrengthMeter({ validations }) {
           <span className="text-sm font-semibold">Força da Senha</span>
           <span className="text-sm font-bold transition-colors">{strengthText[strength]}</span>
         </div>
+        {/* Barra de fundo cinza */}
         <div className="w-full bg-gray-200 rounded-full h-2">
+          {/* Barra colorida animada que cresce conforme a força aumenta */}
           <motion.div
             className={`h-2 rounded-full ${strengthColors[strength]}`}
             initial={{ width: 0 }}
@@ -62,6 +70,7 @@ export default function PasswordStrengthMeter({ validations }) {
           />
         </div>
       </div>
+      {/* Lista de requisitos de validação */}
       <ul className="space-y-1">
         <AnimatePresence>
           <ValidationItem isValid={validations.minLength} text="Mínimo de 8 caracteres" />

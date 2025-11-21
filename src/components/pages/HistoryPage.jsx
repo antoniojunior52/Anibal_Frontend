@@ -4,15 +4,19 @@ import PageTitle from "../ui/PageTitle";
 import AnimatedCard from "../ui/AnimatedCard";
 import Pagination from "../ui/Pagination";
 
+// Página de História (Timeline) da escola
 const HistoryPage = ({ history }) => {
+  // Estados para controle de paginação
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
+  const itemsPerPage = 4; // Quantos marcos históricos mostrar por página
 
+  // Cálculos matemáticos para "fatiar" o array e mostrar só os itens da página atual
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentHistoryItems = history.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(history.length / itemsPerPage);
 
+  // Função para mudar de página
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -23,11 +27,13 @@ const HistoryPage = ({ history }) => {
         title="Nossa História"
         subtitle="Uma jornada de dedicação, crescimento e sucesso."
       />
+      {/* Linha do tempo vertical (criada com CSS no pseudo-elemento before) */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 relative before:content-[''] before:absolute before:left-1/2 before:top-0 before:h-full before:w-1 before:bg-[#4455a3]/30 before:-translate-x-1/2" role="list">
         {currentHistoryItems.length > 0 ? (
           currentHistoryItems.map((item, index) => (
             <div
               key={item._id}
+              // Alterna o alinhamento: par na esquerda, ímpar na direita (estilo ziguezague)
               className={`flex items-center w-full mb-8 flex-col sm:flex-row ${
                 index % 2 === 0 ? "sm:justify-start" : "sm:justify-end"
               }`}
@@ -56,6 +62,7 @@ const HistoryPage = ({ history }) => {
           <p className="text-center text-gray-500">Nenhum item do histórico encontrado.</p>
         )}
       </div>
+      {/* Renderiza paginação apenas se tiver mais de uma página */}
       {totalPages > 1 && (
         <Pagination
           currentPage={currentPage}

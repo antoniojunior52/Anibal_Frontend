@@ -14,7 +14,7 @@ import {
   UserPlus,
 } from "lucide-react";
 
-// Componente auxiliar para renderizar os títulos das seções
+// Componente auxiliar para renderizar os títulos das seções do dashboard
 const SectionTitle = ({ title }) => (
   <>
     <h3 className="text-xl font-semibold text-gray-700 mt-10 mb-4 pb-2 border-b-2 border-gray-200">
@@ -23,8 +23,11 @@ const SectionTitle = ({ title }) => (
   </>
 );
 
+// Página Principal do Dashboard
+// Renderiza os atalhos para cada função baseando-se nas permissões do usuário
 const DashboardHome = ({ navigate, user }) => (
   <div>
+    {/* Cabeçalho de boas-vindas com nível de acesso */}
     <div className="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-[#4455a3]">
       <h2 className="text-2xl font-bold text-gray-800">
         Bem-vindo(a), {user?.name}!
@@ -37,7 +40,7 @@ const DashboardHome = ({ navigate, user }) => (
       </p>
     </div>
 
-    {/* Seção Geral */}
+    {/* Seção Geral (Disponível para todos) */}
     <SectionTitle title="Geral" />
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
       <DashboardCard
@@ -48,7 +51,7 @@ const DashboardHome = ({ navigate, user }) => (
       />
     </div>
 
-    {/* Seções para Secretaria e Administrador */}
+    {/* Seções para Secretaria e Administrador (Gestão de Conteúdo) */}
     {(user?.isSecretaria || user?.isAdmin) && (
       <>
         {/* Seção de Comunicação e Marketing */}
@@ -69,7 +72,7 @@ const DashboardHome = ({ navigate, user }) => (
       </>
     )}
 
-    {/* Seção apenas para Administrador */}
+    {/* Seção apenas para Administrador (Gestão do Sistema) */}
     {user?.isAdmin && (
       <>
         <SectionTitle title="Administração do Sistema" />
@@ -82,7 +85,7 @@ const DashboardHome = ({ navigate, user }) => (
       </>
     )}
 
-    {/* Mensagem para utilizadores sem permissões de gestão */}
+    {/* Mensagem de fallback para utilizadores sem permissões */}
     {!user?.isSecretaria && !user?.isAdmin && (
       <p className="col-span-full text-center text-gray-500 mt-10">
         Não tem permissões para gerir conteúdo.

@@ -6,6 +6,8 @@ import ImageUpload from "../ui/ImageUpload";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import NewsCard from "./NewsCard";
 
+// Formulário de Gerenciamento de Notícias
+// Permite criar, editar e excluir notícias (com upload de imagem)
 const NewsFormFull = ({ news, fetchAllData, handleSave, handleDelete, showNotification }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("list");
@@ -13,7 +15,7 @@ const NewsFormFull = ({ news, fetchAllData, handleSave, handleDelete, showNotifi
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [externalLink, setExternalLink] = useState("");
-  const [editing, setEditing] = useState(null);
+  const [editing, setEditing] = useState(null); // Notícia sendo editada
   const [isLoading, setIsLoading] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
@@ -27,6 +29,7 @@ const NewsFormFull = ({ news, fetchAllData, handleSave, handleDelete, showNotifi
     setActiveTab("form");
   };
 
+  // Preenche o formulário com os dados da notícia para edição
   const handleEdit = (item) => {
     setEditing(item); setTitle(item.title); setContent(item.content);
     setExternalLink(item.externalLink || ""); setFile(null);
@@ -34,11 +37,13 @@ const NewsFormFull = ({ news, fetchAllData, handleSave, handleDelete, showNotifi
     setActiveTab("form");
   };
 
+  // Salva a notícia (com FormData por causa da imagem)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title || !content) {
       showNotification("Título e conteúdo são obrigatórios.", "error"); return;
     }
+    // Exige imagem apenas se for nova notícia
     if (!editing && !file) {
       showNotification("É obrigatório adicionar uma imagem para uma nova notícia.", "error"); return;
     }
@@ -67,6 +72,7 @@ const NewsFormFull = ({ news, fetchAllData, handleSave, handleDelete, showNotifi
 
   return (
     <FormWrapper title="Gerenciar Notícias" icon={<FileText className="mr-2 text-teal-500" />}>
+      {/* Navegação por Abas */}
       <div className="flex border-b border-gray-200 mb-6">
         <button onClick={() => setActiveTab("list")} className={tabClasses("list")}>
           <List size={18} className="mr-2" />
@@ -78,6 +84,7 @@ const NewsFormFull = ({ news, fetchAllData, handleSave, handleDelete, showNotifi
         </button>
       </div>
 
+      {/* Formulário de Cadastro */}
       {activeTab === "form" && (
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
           <FloatingLabelInput id="news-title" label="Título" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -98,6 +105,7 @@ const NewsFormFull = ({ news, fetchAllData, handleSave, handleDelete, showNotifi
         </form>
       )}
 
+      {/* Lista de Notícias */}
       {activeTab === "list" && (
         <div className="animate-fade-in">
           <div className="relative mb-8">

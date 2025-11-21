@@ -1,35 +1,34 @@
 import React, { useState } from "react";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import FloatingLabelInput from "../ui/FloatingLabelInput";
-// Importa os ícones de status e o spinner
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 
-// 1. Recebe 'apiService' como prop
+// Componente de Formulário para Criar Usuários (Admin)
+// Possui verificação de disponibilidade de e-mail
 const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
+  // Estados dos campos do formulário
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("Professor(a)");
   const [isSecretaria, setIsSecretaria] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  // const [isManuallyVerified, setIsManuallyVerified] = useState(false); // <-- REMOVIDO
   const [isLoading, setIsLoading] = useState(false);
 
-  // 2. Novos estados para verificação de e-mail
+  // Estados para feedback visual da checagem de email
   const [emailCheckStatus, setEmailCheckStatus] = useState('idle'); // idle, checking, valid, invalid
   const [emailCheckMessage, setEmailCheckMessage] = useState('');
 
+  // Limpa o formulário após sucesso
   const resetForm = () => {
     setName(""); setEmail("");
     setRole("Professor(a)"); setIsSecretaria(false); setIsAdmin(false);
-    // setIsManuallyVerified(false); // <-- REMOVIDO
-    // 3. Reseta os novos estados
     setEmailCheckStatus('idle');
     setEmailCheckMessage('');
   };
 
-  // 4. Função para verificar o e-mail quando o usuário sai do campo
+  // Verifica se o e-mail está disponível na API quando o usuário sai do campo
   const handleEmailBlur = async () => {
-    // Não verifica se estiver vazio ou se não for um formato de e-mail
+    // Se estiver vazio ou inválido, reseta o status
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setEmailCheckStatus('idle');
       return; 
@@ -39,7 +38,6 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
     setEmailCheckMessage('');
     
     try {
-      // Usa o apiService recebido via props
       await apiService.post("/api/auth/check-email", { email });
       setEmailCheckStatus('valid');
       setEmailCheckMessage('E-mail disponível!');
@@ -49,28 +47,28 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
     }
   };
 
+  // Envia o cadastro
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // 5. Verificação extra antes de submeter
+    // Impede envio se o e-mail for inválido na checagem
     if (emailCheckStatus === 'invalid') {
-      // Idealmente, o botão estaria desabilitado, mas é uma garantia extra
       return; 
     }
     
     setIsLoading(true);
     try {
-      // 6. 'isManuallyVerified' agora está fixo como 'true'
+      // Envia os dados. A flag de verificação manual foi removida pois não é mais necessária.
       await handleRegisterByAdmin({ 
         name, 
         email, 
         role, 
         isSecretaria, 
-        isAdmin, 
-        isManuallyVerified: true 
+        isAdmin
       });
       resetForm();
     } catch (error) {
+      // Erro já tratado no pai
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +79,7 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <FloatingLabelInput id="register-admin-name" label="Nome Completo" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
         
-        {/* Wrapper para o Input de E-mail e o Feedback */}
+        {/* Campo de E-mail com ícones de status */}
         <div>
           <FloatingLabelInput 
             id="register-admin-email" 
@@ -90,13 +88,13 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
             value={email} 
             onChange={(e) => {
               setEmail(e.target.value);
-              setEmailCheckStatus('idle');
+              setEmailCheckStatus('idle'); // Reseta checagem ao digitar
               setEmailCheckMessage('');
             }}
-            onBlur={handleEmailBlur}
+            onBlur={handleEmailBlur} // Dispara checagem ao sair do campo
             required 
           />
-          {/* Feedback visual da verificação */}
+          {/* Feedback visual abaixo do input */}
           <div className="h-5 mt-1 ml-1 text-sm">
             {emailCheckStatus === 'checking' && (
               <span className="flex items-center text-gray-500 animate-pulse">
@@ -116,6 +114,7 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
           </div>
         </div>
         
+        {/* Seleção de Cargo */}
         <div>
           <label htmlFor="register-admin-role" className="block text-sm font-medium text-gray-700 mb-1">Função</label>
           <div className="relative">
@@ -133,6 +132,7 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
           </div>
         </div>
         
+        {/* Permissões Extras */}
         <div className="space-y-4 pt-2">
           <label className="flex items-center justify-between cursor-pointer">
             <span className="font-medium text-gray-900">Acesso de Secretaria</span>
@@ -151,9 +151,9 @@ const UserRegistrationForm = ({ handleRegisterByAdmin, apiService }) => {
               <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isAdmin ? "translate-x-full" : ""}`}></div>
             </div>
           </label>
-          
         </div>
         
+        {/* Botão de Cadastro */}
         <button 
           type="submit" 
           disabled={isLoading || emailCheckStatus === 'checking' || emailCheckStatus === 'invalid'} 

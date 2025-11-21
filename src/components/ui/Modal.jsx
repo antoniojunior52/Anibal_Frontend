@@ -1,11 +1,11 @@
-// components/ui/Modal.jsx
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
+// Componente Modal Genérico (Janela flutuante sobre a tela)
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   const modalRef = useRef(null);
 
-  // Gerir o foco para acessibilidade (trap focus dentro do modal)
+  // Gerir o foco para acessibilidade (trap focus dentro do modal) e fechar com ESC
   useEffect(() => {
     if (isOpen) {
       modalRef.current?.focus();
@@ -29,6 +29,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
 
   let maxWidthClass = 'max-w-md'; // Default size
 
+  // Define a largura do modal baseado na prop 'size'
   switch (size) {
     case 'sm':
       maxWidthClass = 'max-w-sm';
@@ -49,7 +50,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   return (
     <div
       className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 animate-fade-in"
-      onClick={onClose} // Fechar modal ao clicar fora
+      onClick={onClose} // Fechar modal ao clicar fora (fundo escuro)
       role="dialog" // Papel ARIA para modal
       aria-modal="true" // Indica que o conteúdo por trás não é interativo
       aria-labelledby="modal-title" // Liga ao título do modal para leitores de tela
@@ -58,12 +59,14 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
     >
       <div
         className={`bg-white rounded-lg shadow-xl p-6 w-full ${maxWidthClass} transform transition-all duration-300 scale-100 opacity-100`}
-        onClick={(e) => e.stopPropagation()} // Impedir que o clique no modal feche-o
+        onClick={(e) => e.stopPropagation()} // Impedir que o clique NO modal feche-o
       >
         <div className="flex justify-between items-center border-b pb-3 mb-4">
+          {/* Título do Modal */}
           <h2 id="modal-title" className="text-xl font-bold text-gray-800">
             {title}
           </h2>
+          {/* Botão de Fechar (X) */}
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 rounded-full p-1 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -72,6 +75,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
             <X size={24} aria-hidden="true" /> {/* Ícone decorativo */}
           </button>
         </div>
+        {/* Conteúdo dinâmico do modal (children) */}
         <div className="modal-content">
           {children}
         </div>

@@ -2,12 +2,16 @@ import React, { useState } from "react";
 import PageWrapper from "../ui/PageWrapper";
 import PageTitle from "../ui/PageTitle";
 import AnimatedCard from "../ui/AnimatedCard";
-import { API_URL } from "../../App"; // Assuming API_URL is exported from App or moved to a config
+import { API_URL } from "../../App"; 
 
+// Página da Equipe Escolar (Diretoria e Professores)
 const TeachersPage = ({ team }) => {
-  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [selectedProfile, setSelectedProfile] = useState(null); // Perfil selecionado para o modal
+  
+  // Separa a Diretora dos demais professores para destaque
   const director = team.find((p) => p.role === "Diretora");
   const teachers = team.filter((p) => p.role !== "Diretora");
+  
   return (
     <PageWrapper>
       <PageTitle
@@ -15,6 +19,7 @@ const TeachersPage = ({ team }) => {
         subtitle="Conheça a liderança e os educadores dedicados da nossa escola."
       />
       <div className="container mx-auto px-4 pb-12">
+        {/* Seção de Destaque para a Diretoria */}
         {director && (
           <div className="mb-16">
             <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
@@ -40,6 +45,8 @@ const TeachersPage = ({ team }) => {
             </AnimatedCard>
           </div>
         )}
+        
+        {/* Grade de Professores */}
         <div>
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-8 pt-8 border-t">
             Corpo Docente
@@ -67,6 +74,8 @@ const TeachersPage = ({ team }) => {
             ))}
           </div>
         </div>
+        
+        {/* Modal de Detalhes do Perfil (Bio e Informações) */}
         {selectedProfile && (
           <div
             className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"

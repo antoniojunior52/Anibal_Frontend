@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Bot } from "lucide-react";
 
-// API Service
+// Serviço para conectar com o Backend (API)
 import apiService from "./services/apiService.js";
 
-// Hooks
+// Hook personalizado para carregar bibliotecas externas (ex: SheetJS)
 import { loadSheetJS } from "./hooks/hooks.js";
 
-// UI Components
+// --- Componentes de Interface (UI) ---
 import Notification from "./components/ui/Notification";
 import Header from "./components/ui/Header";
 import Footer from "./components/ui/Footer";
@@ -19,11 +19,13 @@ import LoadingSpinner from "./components/ui/LoadingSpinner";
 import Modal from "./components/ui/Modal";
 import AIChatbot from "./components/ui/AIChatbot";
 import AccessibilityMenu from "./components/ui/AccessibilityMenu.jsx";
+
+// Configuração de datas para componentes de calendário (Padrão Brasileiro)
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ptBR } from 'date-fns/locale';
 
-// Page Components
+// --- Páginas Públicas ---
 import HomePage from "./components/pages/HomePage";
 import NewsPage from "./components/pages/NewsPage";
 import NewsDetailPage from "./components/pages/NewsDetailPage";
@@ -40,9 +42,9 @@ import ResetPasswordPage from "./components/pages/ResetPasswordPage";
 import ErrorPage from "./components/pages/ErrorPage";
 import NoticesPage from "./components/pages/NoticesPage";
 import AlbumDetailPage from "./components/pages/AlbumDetailPage";
-import VerifyEmailPage from "./components/pages/VerifyEmailPage";
+// A página de verificação de email foi removida
 
-// Dashboard Components
+// --- Componentes do Painel Administrativo (Dashboard) ---
 import DashboardHome from "./components/dashboard/DashboardHome";
 import ProfileManagementForm from "./components/dashboard/ProfileManagementForm";
 import NewsFormFull from "./components/dashboard/NewsFormFull";
@@ -56,15 +58,20 @@ import UserManagementFull from "./components/dashboard/UserManagementFull";
 import UserRegistrationForm from "./components/dashboard/UserRegistrationForm";
 import NoticeFormFull from "./components/dashboard/NoticeFormFull";
 
+// URL base da API
 export const API_URL = "http://localhost:5000";
 
+// Componente Principal que gerencia toda a aplicação
 export default function App() {
-  const [page, setPage] = useState("home");
-  const [pagePayload, setPagePayload] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
-  const [userEmailForVerification, setUserEmailForVerification] = useState("");
+  // --- ESTADOS DE NAVEGAÇÃO E USUÁRIO ---
+  const [page, setPage] = useState("home"); // Controla qual tela está sendo exibida
+  const [pagePayload, setPagePayload] = useState(null); // Dados extras para a página (ex: ID de uma notícia)
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Se o usuário está logado
+  const [user, setUser] = useState(null); // Dados do usuário logado
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false); // Se o chat está aberto
+  // O estado 'userEmailForVerification' foi removido pois não é mais necessário
+
+  // --- ESTADOS DE DADOS DO SITE ---
   const [news, setNews] = useState([]);
   const [notices, setNotices] = useState([]);
   const [menuUrl, setMenuUrl] = useState("");
@@ -73,19 +80,34 @@ export default function App() {
   const [history, setHistory] = useState([]);
   const [events, setEvents] = useState([]);
   const [gallery, setGallery] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [notification, setNotification] = useState({ message: "", type: "" });
+  const [users, setUsers] = useState([]); // Lista de usuários (apenas admin vê)
+
+  // --- ESTADOS DE UI (Interface) ---
+  const [notification, setNotification] = useState({ message: "", type: "" }); // Notificações topo da tela
+
+  // Modal de Confirmação (Sim/Não)
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmModalMessage, setConfirmModalMessage] = useState("");
   const [confirmModalCallback, setConfirmModalCallback] = useState(null);
+
+  // Controle de carregamento global
   const [globalLoading, setGlobalLoading] = useState(false);
+
+  // Modal Genérico para mensagens diversas
   const [showGenericModal, setShowGenericModal] = useState(false);
   const [genericModalTitle, setGenericModalTitle] = useState("");
   const [genericModalContent, setGenericModalContent] = useState(null);
+
+  // Controle para evitar recarregar usuários admin repetidamente
   const [hasFetchedUsers, setHasFetchedUsers] = useState(false);
+
+  // Configurações de Acessibilidade
   const [isHighContrast, setIsHighContrast] = useState(false);
   const [fontSize, setFontSize] = useState(100);
 
+  // --- EFEITOS DE ACESSIBILIDADE ---
+
+  // Aplica/Remove a classe de alto contraste no body
   useEffect(() => {
     if (isHighContrast) {
       document.body.classList.add('high-contrast');
@@ -95,11 +117,13 @@ export default function App() {
     localStorage.setItem('highContrast', isHighContrast);
   }, [isHighContrast]);
 
+  // Aplica o tamanho da fonte no HTML raiz
   useEffect(() => {
     document.documentElement.style.fontSize = `${fontSize}%`;
     localStorage.setItem('fontSize', fontSize);
   }, [fontSize]);
 
+  // Carrega preferências salvas no localStorage ao iniciar
   useEffect(() => {
     const savedContrast = localStorage.getItem('highContrast') === 'true';
     const savedFontSize = parseInt(localStorage.getItem('fontSize'), 10);
@@ -107,10 +131,14 @@ export default function App() {
     if (!isNaN(savedFontSize)) setFontSize(savedFontSize);
   }, []);
 
+  // Funções de controle de acessibilidade
   const toggleContrast = () => setIsHighContrast(prev => !prev);
   const increaseFontSize = () => setFontSize(prev => Math.min(prev + 10, 150));
   const decreaseFontSize = () => setFontSize(prev => Math.max(prev - 10, 80));
 
+  // --- FUNÇÕES DE UI ---
+
+  // Abre um modal genérico com título e conteúdo
   const openGenericModal = useCallback((title, content) => {
     setGenericModalTitle(title);
     setGenericModalContent(content);
@@ -123,11 +151,15 @@ export default function App() {
     setGenericModalContent(null);
   }, []);
 
+  // Exibe uma notificação (Toast) que desaparece após 4 segundos
   const showNotification = useCallback((message, type) => {
     setNotification({ message, type });
     setTimeout(() => setNotification({ message: "", type: "" }), 4000);
   }, []);
 
+  // --- CARREGAMENTO DE DADOS ---
+
+  // Busca todos os dados públicos do site em paralelo
   const fetchAllData = useCallback(async () => {
     setGlobalLoading(true);
     try {
@@ -159,12 +191,14 @@ export default function App() {
     }
   }, [showNotification]);
 
+  // Busca a lista de usuários (apenas se for Admin)
   const fetchUsers = useCallback(async () => {
     setGlobalLoading(true);
     try {
       const usersData = await apiService.requestWithBody("/api/users", "GET");
       setUsers(usersData);
     } catch (error) {
+      // Ignora erro 403 (sem permissão) para não spamar notificação
       if (!error.message.includes("403")) {
         showNotification("Falha ao carregar utilizadores.", "error");
       }
@@ -173,11 +207,13 @@ export default function App() {
     }
   }, [showNotification]);
 
+  // Carrega dados e scripts ao iniciar o app
   useEffect(() => {
     loadSheetJS();
     fetchAllData();
   }, [fetchAllData]);
 
+  // Monitora se o usuário é admin para carregar a lista de usuários
   useEffect(() => {
     if (user?.isAdmin && !hasFetchedUsers) {
       fetchUsers();
@@ -188,6 +224,9 @@ export default function App() {
     }
   }, [user?.isAdmin, fetchUsers, hasFetchedUsers]);
 
+  // --- NAVEGAÇÃO ---
+
+  // Função principal de navegação (altera estado 'page' e URL)
   const navigate = useCallback((targetPage, payload = null) => {
     window.scrollTo(0, 0);
     setPage(targetPage);
@@ -197,6 +236,7 @@ export default function App() {
     window.history.pushState({ page: targetPage }, "", path);
   }, []);
 
+  // Exibe modal de confirmação e retorna uma Promise (aguarda o clique do usuário)
   const showConfirm = useCallback((message) => {
     return new Promise((resolve) => {
       setConfirmModalMessage(message);
@@ -208,7 +248,9 @@ export default function App() {
     });
   }, []);
 
-  // Função de logout simples, sem confirmação (para ser usada internamente)
+  // --- AUTENTICAÇÃO ---
+
+  // Logout forçado (sem perguntar) - limpa storage e estado
   const forceLogout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -221,6 +263,7 @@ export default function App() {
     setHasFetchedUsers(false);
   }, []);
 
+  // Logout com confirmação do usuário
   const handleLogout = useCallback(
     async (message, type = "info") => {
       const confirmed = await showConfirm("Tem certeza que deseja sair da sua conta?");
@@ -228,8 +271,8 @@ export default function App() {
         showNotification("Logout cancelado.", "info");
         return;
       }
-      
-      forceLogout(); // Usa a função de logout simples
+
+      forceLogout();
 
       navigate("home");
       if (message) {
@@ -239,17 +282,19 @@ export default function App() {
     [navigate, showNotification, showConfirm, forceLogout]
   );
 
-  // *** FUNÇÃO handleLogin ATUALIZADA ***
+  // Login do usuário 
   const handleLogin = async (email, password, rememberMe) => {
     setGlobalLoading(true);
     try {
       const { token, user: userData } = await apiService.post("/api/auth/login", {
         email, password, rememberMe,
       });
+
+      // Salva token e dados no local ou session storage
       const storage = rememberMe ? localStorage : sessionStorage;
       storage.setItem("token", token);
       storage.setItem("user", JSON.stringify(userData));
-      
+
       if (rememberMe) {
         localStorage.setItem("loginTimestamp", new Date().getTime());
       }
@@ -258,39 +303,22 @@ export default function App() {
       setIsLoggedIn(true);
       navigate("dashboard");
       showNotification(`Bem-vindo(a) de volta, ${userData.name.split(" ")[0]}!`, "success");
-    
-    } catch (error) {
-      // *** LÓGICA DE CATCH ATUALIZADA ***
-      // Agora o 'error' é o objeto ApiError de 'apiService.js'
-      // Verificamos o 'error.status' e o 'error.data'
-      if (error.status === 401 && error.data && error.data.needsVerification) {
-        showNotification(error.data.msg || "Por favor, verifique seu e-mail.", "info");
-        // Seta o e-mail que o usuário digitou, para já preencher a próxima tela
-        setUserEmailForVerification(email); 
-        navigate("verify-email"); // Redireciona para a verificação
-      } else {
-        // Erro 400 (Credenciais Inválidas) ou outro erro
-        showNotification(error.message, "error");
-      }
-      // Não relança o erro, pois já o tratamos
-      // throw error; 
 
+    } catch (error) {
+      // Apenas mostra o erro, sem checar por needsVerification
+      showNotification(error.message, "error");
     } finally {
       setGlobalLoading(false);
     }
   };
 
-  // *** NOVA FUNÇÃO (handlePublicRegister) CRIADA ***
+  // Registro público de novos usuários 
   const handlePublicRegister = async (registerData) => {
     setGlobalLoading(true);
     try {
-      // A API agora retorna { msg, email }
-      const response = await apiService.post("/api/auth/public-register", registerData);
-      
-      showNotification(response.msg || "Registro enviado! Verifique seu e-mail.", "info");
-      setUserEmailForVerification(response.email); // Seta o e-mail retornado
-      navigate("verify-email"); // Redireciona para a verificação
-    
+      await apiService.post("/api/auth/public-register", registerData);
+      showNotification("Conta criada com sucesso! Faça login para continuar.", "success");
+      navigate("login"); // Redireciona direto para login
     } catch (error) {
       showNotification(error.message, "error");
       throw error;
@@ -299,43 +327,14 @@ export default function App() {
     }
   };
 
-  const handleVerifyCode = async (code) => {
-    setGlobalLoading(true);
-    try {
-      await apiService.post("/api/auth/verify-email", { email: userEmailForVerification, code });
-      showNotification("Email verificado com sucesso! Pode fazer o login.", "success");
-      navigate("login");
-    } catch (error) {
-      showNotification(error.message || "Código inválido ou expirado.", "error");
-      throw error;
-    } finally {
-      setGlobalLoading(false);
-    }
-  };
-
-  const handleResendCode = async () => {
-    setGlobalLoading(true);
-    try {
-      await apiService.post("/api/auth/resend-code", { email: userEmailForVerification });
-      showNotification("Um novo código foi enviado para o seu email.", "info");
-    } catch (error) {
-      showNotification(error.message || "Falha ao reenviar código.", "error");
-      throw error;
-    } finally {
-      setGlobalLoading(false);
-    }
-  };
-
-  // *** FUNÇÃO handleRegisterByAdmin ATUALIZADA ***
+  // Registro de usuário pelo Admin
   const handleRegisterByAdmin = async (newUserData) => {
     setGlobalLoading(true);
     try {
-      // A API agora retorna { msg }
       const response = await apiService.post("/api/auth/register-by-admin", newUserData);
-      showNotification(response.msg || "Utilizador criado! E-mail de verificação enviado.", "success");
-      fetchUsers();
-      // Redireciona de volta para a lista de usuários após o sucesso
-      navigate("dashboard", "users"); 
+      showNotification(response.msg || "Utilizador criado com sucesso!", "success");
+      fetchUsers(); // Atualiza a lista
+      navigate("dashboard", "users");
     } catch (error) {
       showNotification(error.message, "error");
       throw error;
@@ -344,29 +343,19 @@ export default function App() {
     }
   };
 
-  // *** FUNÇÃO handleProfileUpdate ATUALIZADA ***
+  // Atualização de perfil (Nome/Email)
   const handleProfileUpdate = async (updateData) => {
     setGlobalLoading(true);
     try {
       const endpoint = `/api/users/profile`;
-      // Captura a resposta da API
       const responseData = await apiService.put(endpoint, updateData);
 
-      // VERIFICA SE O E-MAIL FOI ALTERADO E REQUER REVERIFICAÇÃO
-      if (responseData.needsReverification) {
-        forceLogout(); // Desloga o usuário (sem confirmação)
-        
-        setUserEmailForVerification(responseData.email); // Seta o NOVO e-mail
-        navigate("verify-email"); // Redireciona para verificação
-        showNotification("E-mail alterado! Por favor, verifique sua nova caixa de entrada para reativar sua conta.", "info");
+      // Se o e-mail mudou, não pede verificação, apenas atualiza
+      const storage = localStorage.getItem("token") ? localStorage : sessionStorage;
+      storage.setItem("user", JSON.stringify(responseData));
+      setUser(responseData);
+      showNotification("Perfil atualizado com sucesso!", "success");
 
-      } else {
-        // Fluxo normal (sem alteração de e-mail)
-        const storage = localStorage.getItem("token") ? localStorage : sessionStorage;
-        storage.setItem("user", JSON.stringify(responseData));
-        setUser(responseData);
-        showNotification("Perfil atualizado com sucesso!", "success");
-      }
     } catch (error) {
       showNotification(error.message, "error");
       throw error;
@@ -375,6 +364,7 @@ export default function App() {
     }
   };
 
+  // Alteração de senha
   const handleChangePassword = async (passwordData) => {
     setGlobalLoading(true);
     try {
@@ -388,18 +378,24 @@ export default function App() {
     }
   };
 
+  // Verifica sessão ativa ao carregar a página
   useEffect(() => {
     const token = localStorage.getItem("token");
     const sessionToken = sessionStorage.getItem("token");
     if (token || sessionToken) {
       const storedUser = token ? localStorage.getItem("user") : sessionStorage.getItem("user");
       const loginTimestamp = localStorage.getItem("loginTimestamp");
+
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         const now = new Date().getTime();
         const twentyFourHours = 24 * 60 * 60 * 1000;
+
+        // Verifica expiração do login "Lembrar de mim"
         if (token && loginTimestamp && (now - parseInt(loginTimestamp, 10) > twentyFourHours)) {
-          handleLogout("Sua sessão expirou por segurança. Por favor, faça login novamente.", "info");
+          forceLogout(); // Limpa o storage sem perguntar nada
+          showNotification("Sua sessão expirou. Por favor, faça login novamente.", "info");
+          navigate("login");
         } else {
           if (!user || user.id !== parsedUser.id) {
             setUser(parsedUser);
@@ -407,7 +403,6 @@ export default function App() {
           setIsLoggedIn(true);
         }
       } else {
-        // Alterado para usar forceLogout para evitar loop de confirmação
         forceLogout();
         showNotification("Sessão inválida. Por favor, faça login novamente.", "error");
       }
@@ -417,8 +412,9 @@ export default function App() {
       setUsers([]);
       setHasFetchedUsers(false);
     }
-  }, [handleLogout, user, forceLogout]); // Adicionado forceLogout
+  }, [handleLogout, user, forceLogout]);
 
+  // Redireciona URL de reset de senha vinda do e-mail
   useEffect(() => {
     const path = window.location.pathname;
     if (path.startsWith("/reset-password/")) {
@@ -427,11 +423,13 @@ export default function App() {
     }
   }, [navigate]);
 
+  // Função genérica para Salvar/Atualizar dados (CRUD)
   const handleSave = (endpoint, fetchFunction) => async (data, id = null) => {
     const service = typeof data.append === "function"
       ? (id ? apiService.putForm : apiService.postForm)
       : (id ? apiService.put : apiService.post);
     const url = id ? `${endpoint}/${id}` : endpoint;
+
     if (id) {
       const confirmed = await showConfirm("Tem a certeza que quer atualizar este item?");
       if (!confirmed) {
@@ -451,7 +449,8 @@ export default function App() {
       setGlobalLoading(false);
     }
   };
-  
+
+  // Função genérica para Deletar dados (CRUD)
   const handleDelete = useCallback((endpoint, fetchFunction) => async (id) => {
     const confirmed = await showConfirm("Tem a certeza de que deseja apagar este item?");
     if (!confirmed) {
@@ -471,24 +470,24 @@ export default function App() {
     }
   }, [showNotification, showConfirm]);
 
+  // Placeholder para busca global
   const handleGlobalSearch = useCallback((searchTerm) => {
     showNotification(`Pesquisa global por: "${searchTerm}" (Funcionalidade a ser implementada)`, "info");
   }, [showNotification]);
 
+  // --- RENDERIZAÇÃO DAS PÁGINAS (ROTEAMENTO) ---
   const renderPage = () => {
     if (!isLoggedIn && page === "dashboard") {
       return <LoginPage navigate={navigate} showNotification={showNotification} handleLogin={handleLogin} />;
     }
     switch (page) {
+      // --- ROTAS PÚBLICAS ---
       case "home": return <HomePage navigate={navigate} news={news} events={events} />;
-      
-      // *** ATUALIZADO case "register" ***
-      case "register": return <RegisterPage 
-        navigate={navigate} 
-        showNotification={showNotification} 
-        handleRegister={handlePublicRegister} // Passa a nova função
+      case "register": return <RegisterPage
+        navigate={navigate}
+        showNotification={showNotification}
+        handleRegister={handlePublicRegister}
       />;
-
       case "news": return <NewsPage news={news} navigate={navigate} />;
       case "notices": return <NoticesPage notices={notices} />;
       case "news-detail":
@@ -500,25 +499,15 @@ export default function App() {
       case "history": return <HistoryPage history={history} />;
       case "events": return <EventsPage events={events} />;
       case "gallery": return <GalleryPage gallery={gallery} navigate={navigate} />;
-      case "gallery-album": return (<AlbumDetailPage gallery={gallery} albumName={pagePayload} onBack={() => navigate("gallery")}/>);
+      case "gallery-album": return (<AlbumDetailPage gallery={gallery} albumName={pagePayload} onBack={() => navigate("gallery")} />);
       case "login": return <LoginPage navigate={navigate} showNotification={showNotification} handleLogin={handleLogin} />;
       case "forgot-password": return <ForgotPasswordPage navigate={navigate} showNotification={showNotification} apiService={apiService} />;
       case "reset-password": return <ResetPasswordPage token={pagePayload} navigate={navigate} showNotification={showNotification} apiService={apiService} />;
-      
-      // *** ATUALIZADO case "verify-email" ***
-      case "verify-email":
-        return (
-          <VerifyEmailPage
-            navigate={navigate}
-            userEmail={userEmailForVerification}
-            handleVerifyCode={handleVerifyCode}
-            handleResendCode={handleResendCode}
-            showNotification={showNotification} // Passa o showNotification
-          />
-        );
-      
+
+      // --- ROTAS PRIVADAS (DASHBOARD) ---
       case "dashboard":
         if (!isLoggedIn) return <LoginPage navigate={navigate} showNotification={showNotification} handleLogin={handleLogin} />;
+
         const backButton = (
           <button onClick={() => navigate("dashboard")} className="mb-8 flex items-center font-semibold text-[#4455a3] hover:opacity-80 transition-all">
             <ArrowLeft size={18} className="mr-2" /> Voltar ao Painel
@@ -538,11 +527,10 @@ export default function App() {
           case "menu": dashboardContent = <div>{backButton}<MenuFormFull menu={menuDataForComponent} showNotification={showNotification} apiService={apiService} fetchAllData={fetchAllData} /></div>; break;
           case "schedules": dashboardContent = <div>{backButton}<SchedulesFormFull schedules={schedules} setSchedules={setSchedules} showNotification={showNotification} apiService={apiService} fetchAllData={fetchAllData} CustomFileInput={CustomFileInput} showConfirm={showConfirm} /></div>; break;
           case "users": dashboardContent = <div>{backButton}<UserManagementFull users={users} user={user} fetchUsers={fetchUsers} handleSave={handleSave} handleDelete={handleDelete} showNotification={showNotification} handleRegisterByAdmin={handleRegisterByAdmin} navigate={navigate} apiService={apiService} /></div>; break;
-          
-          // *** MODIFICAÇÃO APLICADA AQUI ***
-          case "register-user": dashboardContent = <div>{backButton}<UserRegistrationForm 
-            handleRegisterByAdmin={handleRegisterByAdmin} 
-            apiService={apiService} // <-- PROP ADICIONADA
+
+          case "register-user": dashboardContent = <div>{backButton}<UserRegistrationForm
+            handleRegisterByAdmin={handleRegisterByAdmin}
+            apiService={apiService}
           /></div>; break;
 
           default: dashboardContent = <DashboardHome navigate={navigate} user={user} />;
@@ -600,8 +588,8 @@ export default function App() {
         >
           <Bot size={24} />
         </button>
-      )} 
-      <AccessibilityMenu 
+      )}
+      <AccessibilityMenu
         toggleContrast={toggleContrast}
         increaseFontSize={increaseFontSize}
         decreaseFontSize={decreaseFontSize}

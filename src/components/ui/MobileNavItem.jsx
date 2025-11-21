@@ -1,5 +1,6 @@
 import React from "react";
 
+// Botão simples para os itens do menu em telas pequenas (Mobile)
 const MobileNavItem = ({ children, onClick }) => (
   <button
     type="button"

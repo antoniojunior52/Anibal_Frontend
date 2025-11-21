@@ -1,4 +1,3 @@
-// components/pages/SchedulesPage.jsx
 import React, { useState, useEffect } from "react";
 import PageWrapper from "../ui/PageWrapper";
 import PageTitle from "../ui/PageTitle";
@@ -6,9 +5,10 @@ import SimpleTable from "../ui/SimpleTable";
 import { Search, Download, CalendarDays, Info } from "lucide-react";
 import { API_URL } from "../../App";
 
-// Adicionada a importação da biblioteca xlsx
+// Adicionada a importação da biblioteca xlsx para ler arquivos Excel
 import * as XLSX from 'xlsx';
 
+// Página de Horários de Aula (Lê Excel e exibe na tela)
 const SchedulesPage = ({ schedules }) => {
   const [selectedClass, setSelectedClass] = useState(
     Object.keys(schedules)[0] || ""
@@ -17,6 +17,7 @@ const SchedulesPage = ({ schedules }) => {
   const [isLoading, setIsLoading] = useState(true);
   const scheduleKeys = Object.keys(schedules).join(",");
 
+  // Garante que sempre haja uma turma selecionada se a lista de horários mudar
   useEffect(() => {
     const availableClasses = Object.keys(schedules);
     if (
@@ -25,12 +26,13 @@ const SchedulesPage = ({ schedules }) => {
     ) {
       setSelectedClass(availableClasses[0]);
     }
-  }, [scheduleKeys, selectedClass, schedules]); // 'schedules' adicionado como dependência
+  }, [scheduleKeys, selectedClass, schedules]); 
 
   const scheduleUrl = schedules[selectedClass]
     ? `${API_URL}${schedules[selectedClass]}`
     : null;
 
+  // Efeito principal: Baixa o arquivo Excel da turma selecionada, converte para JSON e salva no estado
   useEffect(() => {
     const fetchExcelData = async () => {
       if (!scheduleUrl) return;
@@ -39,9 +41,10 @@ const SchedulesPage = ({ schedules }) => {
       try {
         const response = await fetch(scheduleUrl);
         const arrayBuffer = await response.arrayBuffer();
+        // Processamento do Excel usando a biblioteca XLSX
         const data = new Uint8Array(arrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
+        const sheetName = workbook.SheetNames[0]; // Pega a primeira aba
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
         setTableData(jsonData);
@@ -82,6 +85,7 @@ const SchedulesPage = ({ schedules }) => {
                     ))}
                   </select>
                 </div>
+                {/* Botão para baixar o arquivo original (.xlsx) */}
                 {scheduleUrl && (
                   <a
                     href={scheduleUrl}
@@ -96,7 +100,7 @@ const SchedulesPage = ({ schedules }) => {
                 )}
               </div>
 
-              {/* Tabela de Horários */}
+              {/* Tabela de Horários renderizada dinamicamente */}
               {isLoading ? (
                 <div className="text-center p-8 text-gray-500">
                   Carregando dados da tabela...

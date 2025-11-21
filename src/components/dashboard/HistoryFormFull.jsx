@@ -5,8 +5,8 @@ import FloatingLabelInput from "../ui/FloatingLabelInput";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import HistoryTimelineItem from "./HistoryTimelineItem";
 
+// Formulário de Gerenciamento da Linha do Tempo (História)
 const HistoryFormFull = ({ history, fetchAllData, handleSave, handleDelete, showNotification }) => {
-  // ... (toda a lógica do componente permanece a mesma)
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("list");
   const [year, setYear] = useState("");
@@ -24,6 +24,7 @@ const HistoryFormFull = ({ history, fetchAllData, handleSave, handleDelete, show
     setActiveTab("form");
   };
 
+  // Carrega dados do marco histórico para edição
   const handleEdit = (item) => {
     setEditing(item); setYear(item.year); setTitle(item.title);
     setDescription(item.description);
@@ -31,6 +32,7 @@ const HistoryFormFull = ({ history, fetchAllData, handleSave, handleDelete, show
     window.scrollTo(0, 0);
   };
 
+  // Salva o marco histórico (Novo ou Edição)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -51,6 +53,7 @@ const HistoryFormFull = ({ history, fetchAllData, handleSave, handleDelete, show
 
   return (
     <FormWrapper title="Gerir História" icon={<Milestone className="mr-2 text-yellow-500" />}>
+      {/* Navegação por Abas */}
       <div className="flex border-b border-gray-200 mb-6">
         <button onClick={() => setActiveTab("list")} className={tabClasses("list")}>
           <List size={18} className="mr-2" />
@@ -62,6 +65,7 @@ const HistoryFormFull = ({ history, fetchAllData, handleSave, handleDelete, show
         </button>
       </div>
 
+      {/* Formulário */}
       {activeTab === 'form' && (
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
           <FloatingLabelInput id="history-year" label="Ano (ex: 2024)" type="number" value={year} onChange={(e) => setYear(e.target.value)} required />
@@ -71,10 +75,11 @@ const HistoryFormFull = ({ history, fetchAllData, handleSave, handleDelete, show
             <label htmlFor="history-description" className={`absolute left-3 text-gray-500 transition-all duration-200 ease-in-out cursor-text ${description ? 'top-[-10px] text-xs text-yellow-500 bg-white px-1' : 'top-2 text-base'} peer-focus:top-[-10px] peer-focus:text-xs peer-focus:text-yellow-500 peer-focus:bg-white peer-focus:px-1`}>Descrição</label>
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
-            {/* CORREÇÃO AQUI: 'text-white' alterado para 'text-black' */}
+            {/* Botão Cancelar */}
             <button type="button" onClick={() => { resetForm(); setActiveTab("list"); }} className="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600">
               Cancelar
             </button>
+            {/* Botão Salvar */}
             <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-yellow-500 text-black p-3 rounded-md shadow-sm hover:bg-yellow-600 transition-colors disabled:bg-gray-400 font-semibold">
               {isLoading ? <LoadingSpinner size="sm" /> : (editing ? "Atualizar Marco" : "Adicionar Marco")}
             </button>
@@ -82,8 +87,10 @@ const HistoryFormFull = ({ history, fetchAllData, handleSave, handleDelete, show
         </form>
       )}
 
+      {/* Lista de Marcos Históricos */}
       {activeTab === 'list' && (
         <div className="animate-fade-in">
+          {/* Busca */}
           <div className="relative mb-8">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
               <Search className="h-5 w-5 text-gray-400" />
@@ -98,6 +105,7 @@ const HistoryFormFull = ({ history, fetchAllData, handleSave, handleDelete, show
           </div>
           
           {(() => {
+            // Ordena por ano (decrescente) e filtra
             const sortedHistory = [...history].sort((a, b) => b.year - a.year);
             const filteredHistory = sortedHistory.filter(item => {
               const query = searchQuery.toLowerCase();
@@ -132,7 +140,6 @@ const HistoryFormFull = ({ history, fetchAllData, handleSave, handleDelete, show
             return (
               <div className="text-center py-10 px-4 border-2 border-dashed rounded-lg">
                 <p className="text-gray-500">Nenhum marco histórico adicionado.</p>
-                {/* CORREÇÃO AQUI: 'text-white' alterado para 'text-black' */}
                 <button onClick={handleAddNew} className="mt-4 bg-yellow-500 text-black font-semibold py-2 px-4 rounded-md shadow-sm hover:bg-yellow-600 transition-all">
                   <PlusCircle size={18} className="inline mr-2" />
                   Adicionar primeiro marco

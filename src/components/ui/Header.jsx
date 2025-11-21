@@ -3,9 +3,12 @@ import { LayoutDashboard, UserCircle, LogOut, Menu } from "lucide-react";
 import NavItem from "./NavItem";
 import MobileNavItem from "./MobileNavItem";
 
+// Cabeçalho principal da aplicação (Barra de Navegação)
 const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) => {
+  // Estado para controlar se o menu Mobile está aberto ou fechado
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Função auxiliar para navegar no mobile e fechar o menu automaticamente
   const handleMobileNav = (page) => {
     onNavigate(page);
     setIsMenuOpen(false);
@@ -15,6 +18,7 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
     <header className="bg-white/90 backdrop-blur-lg shadow-md sticky top-0 z-40">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
+          {/* Logo e Nome da Escola */}
           <div
             className="flex items-center space-x-3 cursor-pointer"
             onClick={() => onNavigate("home")}
@@ -33,7 +37,7 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
             </h1>
           </div>
 
-          {/* Navegação principal - visível a partir de telas 'lg' */}
+          {/* Navegação principal (Desktop) - visível apenas em telas 'lg' para cima */}
           <nav className="hidden lg:flex items-center space-x-1" aria-label="Navegação Principal">
             <NavItem onClick={() => onNavigate("news")}>Notícias</NavItem>
             <NavItem onClick={() => onNavigate("notices")}>Recados</NavItem>
@@ -45,10 +49,11 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
             <NavItem onClick={() => onNavigate("menu")}>Cardápio</NavItem>
           </nav>
 
-          {/* Botões de login/dashboard - visíveis a partir de telas 'lg' */}
+          {/* Área de Login/Dashboard (Desktop) */}
           <div className="hidden lg:flex items-center space-x-4">
             {isLoggedIn ? (
               <div className="flex items-center space-x-4">
+                {/* Botão Dashboard */}
                 <button
                   onClick={() => onNavigate("dashboard")}
                   className="flex items-center space-x-2 bg-[#4455a3] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg"
@@ -56,6 +61,7 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
                 >
                   <LayoutDashboard size={18} /> <span>Dashboard</span>
                 </button>
+                {/* Botão Sair */}
                 <button
                   onClick={() => onLogout("Você saiu da sua conta.", "success")}
                   className="text-gray-600 hover:text-[#4455a3] transition duration-300"
@@ -65,6 +71,7 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
                 </button>
               </div>
             ) : (
+              /* Botão Área Restrita (Login) */
               <div className="flex items-center space-x-4">
                 <button
                   onClick={onLogin}
@@ -77,7 +84,7 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
             )}
           </div>
 
-          {/* Botão de menu mobile - visível apenas em telas menores que 'lg' */}
+          {/* Botão Hambúrguer (Mobile) - visível apenas em telas menores que 'lg' */}
           <div className="lg:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -91,6 +98,7 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
         </div>
       </div>
 
+      {/* Menu Dropdown (Mobile) - Renderizado apenas se isMenuOpen for true */}
       {isMenuOpen && (
         <div className="lg:hidden bg-white absolute top-20 left-0 w-full shadow-lg z-50" role="menu">
           <nav className="flex flex-col p-4 space-y-2">
@@ -103,6 +111,7 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
             <MobileNavItem onClick={() => handleMobileNav("schedules")}>Horários</MobileNavItem>
             <MobileNavItem onClick={() => handleMobileNav("menu")}>Cardápio</MobileNavItem>
             <hr className="border-gray-200 my-2" />
+            {/* Opções de Login/Logout no Mobile */}
             {isLoggedIn ? (
               <>
                 <MobileNavItem onClick={() => handleMobileNav("dashboard")}>Dashboard</MobileNavItem>

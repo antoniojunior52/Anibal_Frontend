@@ -2,15 +2,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FileSpreadsheet, FileText, Image, UploadCloud, CalendarDays } from 'lucide-react';
 
+// Componente versátil: Funciona como Input de Arquivo (com Drag&Drop) OU Input de Data, dependendo da prop 'accept'
 const CustomFileInput = ({ label, onChange, accept, fileName, id, required = false }) => {
   const [selectedFileName, setSelectedFileName] = useState(fileName);
   const [imagePreview, setImagePreview] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef(null); // Referência para acionar o input file escondido
 
+  // Verifica se deve comportar-se como campo de Data ou Imagem
   const isDateInput = accept === 'date';
   const isImageInput = accept && accept.includes('image/');
 
+  // Efeito para atualizar o estado quando as props mudam (ex: ao carregar dados existentes)
   useEffect(() => {
     setSelectedFileName(fileName);
     if (!fileName && !isDateInput && !isImageInput) {
@@ -21,13 +24,14 @@ const CustomFileInput = ({ label, onChange, accept, fileName, id, required = fal
     }
   }, [fileName, isDateInput, isImageInput]);
 
+  // Processa o arquivo: gera preview se for imagem e define o nome
   const processFile = (file) => {
     if (file) {
       setSelectedFileName(file.name);
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = () => {
-          setImagePreview(reader.result);
+          setImagePreview(reader.result); // Gera base64 para preview
         };
         reader.readAsDataURL(file);
       } else {
@@ -41,11 +45,13 @@ const CustomFileInput = ({ label, onChange, accept, fileName, id, required = fal
     }
   };
 
+  // Gerencia a mudança (quando usuário seleciona arquivo ou data)
   const handleFileChange = (e) => {
     if (isDateInput) {
       onChange(e);
       setSelectedFileName(e.target.value);
     } else {
+      // Se for arquivo, processa e cria um objeto compatível para o onChange
       const file = processFile(e.target.files[0]);
       const dataTransfer = new DataTransfer();
       if (file) {
@@ -60,6 +66,7 @@ const CustomFileInput = ({ label, onChange, accept, fileName, id, required = fal
     }
   };
 
+  // Define qual ícone e cor usar baseado no tipo de arquivo (Excel, PDF, Imagem)
   const getFileIconAndColor = () => {
     let iconComponent = <UploadCloud className="h-12 w-12" aria-hidden="true" />;
     let textColorClass = 'text-gray-500';
@@ -86,6 +93,7 @@ const CustomFileInput = ({ label, onChange, accept, fileName, id, required = fal
 
       const type = determineType(selectedFileName, accept);
 
+      // Switch para personalizar visual (Verde=Excel, Vermelho=PDF, Roxo=Imagem)
       switch (type) {
         case 'excel':
           iconComponent = <FileSpreadsheet className="h-12 w-12 text-green-500" aria-hidden="true" />;
@@ -112,6 +120,7 @@ const CustomFileInput = ({ label, onChange, accept, fileName, id, required = fal
     return { icon: iconComponent, color: textColorClass, message: defaultMessage };
   };
 
+  // Funções para controle visual do Drag & Drop (Arrastar arquivo por cima)
   const onDragOver = (e) => {
     if (!isDateInput) {
       e.preventDefault();
@@ -126,6 +135,7 @@ const CustomFileInput = ({ label, onChange, accept, fileName, id, required = fal
     }
   };
 
+  // Quando o arquivo é solto na área
   const onDrop = (e) => {
     if (!isDateInput) {
       e.preventDefault();
@@ -146,6 +156,7 @@ const CustomFileInput = ({ label, onChange, accept, fileName, id, required = fal
 
   const { icon, color, message } = getFileIconAndColor();
 
+  // Define cores de fundo e borda dependendo do tipo de arquivo
   const getDropzoneStyles = () => {
     let borderColorClass = 'border-blue-500';
     let bgColorClass = 'bg-blue-50';
@@ -193,6 +204,7 @@ const CustomFileInput = ({ label, onChange, accept, fileName, id, required = fal
 
   const { borderColorClass, bgColorClass, dragoverBgColorClass } = getDropzoneStyles();
 
+  // RENDERIZAÇÃO 1: Se for Data, exibe um input normal estilizado
   if (isDateInput) {
     // Renderiza um input de data com estilo de FloatingLabelInput
     return (
@@ -222,12 +234,12 @@ const CustomFileInput = ({ label, onChange, accept, fileName, id, required = fal
     );
   }
 
-  // Renderiza o input de arquivo como antes (dropzone)
+  // RENDERIZAÇÃO 2: Se for Arquivo, renderiza a área de upload (dropzone)
   return (
     <div className={`container w-full max-w-sm mx-auto flex flex-col items-center justify-between p-2 rounded-lg shadow-md ${bgColorClass}`}>
       <div
         className={`dropzone flex-1 w-full border-2 border-dashed ${borderColorClass} rounded-lg flex flex-col items-center justify-center p-4 min-h-[150px] cursor-pointer transition-all duration-300 ease-in-out ${isDragging ? dragoverBgColorClass : ''}`}
-        onClick={() => fileInputRef.current.click()}
+        onClick={() => fileInputRef.current.click()} // Clica no input invisível ao clicar na div
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
@@ -238,13 +250,14 @@ const CustomFileInput = ({ label, onChange, accept, fileName, id, required = fal
         <input
           type="file"
           ref={fileInputRef}
-          className="hidden"
+          className="hidden" // Input original escondido
           onChange={handleFileChange}
           accept={accept}
           aria-label={label}
           required={required}
         />
         
+        {/* Exibe preview da imagem ou o ícone do arquivo */}
         {imagePreview ? (
           <img src={imagePreview} alt="Pré-visualização" className="max-w-full h-auto max-h-[120px] object-contain rounded-md shadow-sm" />
         ) : (

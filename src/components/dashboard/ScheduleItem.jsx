@@ -1,17 +1,20 @@
 import React from 'react';
 import { Trash2, Sheet, Download } from 'lucide-react';
 
+// Item individual da lista de Horários no painel admin
 const ScheduleItem = ({ className, scheduleData, onDelete }) => {
-  // A prop 'scheduleData' deve conter a URL do arquivo, ex: { fileUrl: '...' }
+  // Extrai a URL do arquivo do objeto de dados
   const fileUrl = scheduleData?.fileUrl;
 
   return (
     <div className="bg-white p-4 rounded-xl border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-shadow hover:shadow-lg">
+      {/* Nome da Turma */}
       <div className="flex items-center">
         <Sheet className="w-6 h-6 mr-3 text-green-600 flex-shrink-0" />
         <span className="font-bold text-gray-800">{className}</span>
       </div>
 
+      {/* Ações: Ver/Baixar e Excluir */}
       <div className="flex items-center space-x-2 self-end sm:self-center">
         {fileUrl && (
           <a

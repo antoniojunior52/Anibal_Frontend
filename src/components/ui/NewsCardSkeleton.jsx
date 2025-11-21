@@ -1,11 +1,12 @@
-// src/components/ui/NewsCardSkeleton.jsx
 import React from 'react';
 
+// Placeholder de carregamento (Esqueleto) específico para Cartões de Notícia
 const NewsCardSkeleton = () => {
   return (
     <div className="p-6 rounded-xl shadow-md bg-white border border-gray-200">
+      {/* animate-pulse faz o efeito visual de piscar/carregar */}
       <div className="animate-pulse flex flex-col h-full">
-        {/* Placeholder da Imagem */}
+        {/* Placeholder da Imagem Grande */}
         <div className="w-full h-40 bg-gray-200 rounded-md mb-4"></div>
         
         <div className="flex items-start mb-4">
@@ -19,7 +20,7 @@ const NewsCardSkeleton = () => {
           </div>
         </div>
         
-        {/* Placeholder do Conteúdo */}
+        {/* Placeholder do Conteúdo (texto) */}
         <div className="space-y-2">
           <div className="h-3 bg-gray-200 rounded"></div>
           <div className="h-3 bg-gray-200 rounded"></div>

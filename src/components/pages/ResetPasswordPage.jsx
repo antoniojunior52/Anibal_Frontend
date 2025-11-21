@@ -1,5 +1,3 @@
-// src/components/pages/ResetPasswordPage.jsx
-
 import React, { useState, useEffect } from "react";
 import PageWrapper from "../ui/PageWrapper";
 import FloatingLabelInput from "../ui/FloatingLabelInput";
@@ -7,6 +5,7 @@ import PasswordStrengthMeter from '../ui/PasswordStrengthMeter';
 import { AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 
+// Página onde o usuário digita a NOVA senha (após clicar no link do email)
 const ResetPasswordPage = ({ navigate, showNotification, apiService, token }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -17,6 +16,7 @@ const ResetPasswordPage = ({ navigate, showNotification, apiService, token }) =>
     minLength: false, hasUpper: false, hasLower: false, hasNumber: false, passwordsMatch: false,
   });
 
+  // Validação em tempo real
   useEffect(() => {
     setValidations({
       minLength: password.length >= 8,
@@ -36,12 +36,11 @@ const ResetPasswordPage = ({ navigate, showNotification, apiService, token }) =>
       return;
     }
     try {
+      // Envia o token e a nova senha para o backend
       const { msg } = await apiService.put(`/api/auth/reset-password/${token}`, { password });
       showNotification(msg, "success");
       
-      // Esta chamada está correta. 
-      // Ela vai acionar a nova função 'navigate' no App.js, 
-      // que vai trocar o estado para "home" E atualizar a URL para "/".
+      // Redireciona para a página inicial
       navigate("home"); 
 
     } catch (error) {
@@ -57,6 +56,7 @@ const ResetPasswordPage = ({ navigate, showNotification, apiService, token }) =>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Redefinir Nova Senha</h2>
           </div>
           <form className="mt-8 space-y-6" onSubmit={handleResetPassword}>
+            {/* Campo Nova Senha */}
             <div className="relative password-input-wrapper">
               <FloatingLabelInput
                 id="new-password"
@@ -73,18 +73,19 @@ const ResetPasswordPage = ({ navigate, showNotification, apiService, token }) =>
               </button>
             </div>
             
+            {/* Campo Confirmar Senha */}
             <FloatingLabelInput
               id="confirm-new-password"
               label="Confirmar Nova Senha"
               type={showPassword ? "text" : "password"}
               value={confirmPassword}
-              // Correção do erro de digitação (e.targe -> e.target)
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               onFocus={() => setIsPasswordFocused(true)}
               onBlur={() => setIsPasswordFocused(false)}
             />
             
+            {/* Medidor de Força */}
             <AnimatePresence>
               {(isPasswordFocused || password.length > 0) && (
                 <PasswordStrengthMeter validations={validations} />

@@ -4,15 +4,17 @@ import PageTitle from "../ui/PageTitle";
 import AnimatedCard from "../ui/AnimatedCard";
 import { API_URL } from "../../App";
 
+// Página pública da Galeria 
 const GalleryPage = ({ gallery, navigate }) => {
-  // Lógica para agrupar as imagens por álbum
+  
+  // Agrupa as imagens por álbum para mostrar apenas uma "capa" por álbum
   const albums = gallery.reduce((acc, image) => {
     const albumName = image.album || "Outras Fotos";
     
     if (!acc[albumName]) {
       acc[albumName] = {
-        cover: image.url,
-        count: 0,
+        cover: image.url, // Primeira imagem vira capa
+        count: 0, // Contador de fotos no álbum
       };
     }
     acc[albumName].count += 1;
@@ -37,7 +39,7 @@ const GalleryPage = ({ gallery, navigate }) => {
                 className="h-full"
                 role="listitem"
               >
-                {/* O card do álbum usa uma <div> com onClick para navegação */}
+                {/* Card Clicável que navega para a página de detalhes do álbum */}
                 <div 
                   onClick={() => navigate('gallery-album', albumName)}
                   className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer group aspect-square"
@@ -71,4 +73,3 @@ const GalleryPage = ({ gallery, navigate }) => {
 };
 
 export default GalleryPage;
-

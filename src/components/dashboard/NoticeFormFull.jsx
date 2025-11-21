@@ -4,8 +4,9 @@ import { Megaphone, PlusCircle, List, Search } from "lucide-react";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import NoticeItem from "./NoticeItem";
 
+// Formulário de Gerenciamento de Recados
+// Permite publicar novos recados simples (apenas texto) e listar/excluir existentes
 const NoticeFormFull = ({ notices, fetchAllData, handleSave, handleDelete, showNotification, user }) => {
-  // ... (toda a lógica do componente permanece a mesma)
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("list");
   const [content, setContent] = useState("");
@@ -20,6 +21,7 @@ const NoticeFormFull = ({ notices, fetchAllData, handleSave, handleDelete, showN
     setActiveTab("form");
   };
 
+  // Salva o novo recado
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -40,6 +42,7 @@ const NoticeFormFull = ({ notices, fetchAllData, handleSave, handleDelete, showN
 
   return (
     <FormWrapper title="Gerir Recados do Dia" icon={<Megaphone className="mr-2 text-[#ec9c30]" />}>
+      {/* Navegação por Abas */}
       <div className="flex border-b border-gray-200 mb-6">
         <button onClick={() => setActiveTab("list")} className={tabClasses("list")}>
           <List size={18} className="mr-2" />
@@ -51,6 +54,7 @@ const NoticeFormFull = ({ notices, fetchAllData, handleSave, handleDelete, showN
         </button>
       </div>
 
+      {/* Formulário de Criação */}
       {activeTab === 'form' && (
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
           <div className="relative">
@@ -60,10 +64,11 @@ const NoticeFormFull = ({ notices, fetchAllData, handleSave, handleDelete, showN
             </label>
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
-            {/* CORREÇÃO AQUI: 'text-white' alterado para 'text-black' */}
+            {/* Botão Cancelar */}
             <button type="button" onClick={() => setActiveTab("list")} className="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600">
               Cancelar
             </button>
+            {/* Botão Publicar */}
              <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center bg-[#ec9c30] text-black p-3 rounded-md shadow-sm hover:bg-[#d68a2a] transition-colors disabled:bg-gray-400 font-semibold">
                 {isLoading ? <LoadingSpinner size="sm" /> : 'Publicar Recado'}
             </button>
@@ -71,8 +76,10 @@ const NoticeFormFull = ({ notices, fetchAllData, handleSave, handleDelete, showN
         </form>
       )}
 
+      {/* Lista de Recados */}
       {activeTab === 'list' && (
         <div className="animate-fade-in">
+          {/* Busca */}
           <div className="relative mb-8">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
               <Search className="h-5 w-5 text-gray-400" />
@@ -106,7 +113,6 @@ const NoticeFormFull = ({ notices, fetchAllData, handleSave, handleDelete, showN
             return (
               <div className="text-center py-10 px-4 border-2 border-dashed rounded-lg">
                 <p className="text-gray-500">Nenhum recado publicado.</p>
-                {/* CORREÇÃO AQUI: 'text-white' alterado para 'text-black' */}
                 <button onClick={handleAddNew} className="mt-4 bg-[#ec9c30] text-black font-semibold py-2 px-4 rounded-md shadow-sm hover:bg-[#d68a2a] transition-all">
                   <PlusCircle size={18} className="inline mr-2" />
                   Publicar primeiro recado

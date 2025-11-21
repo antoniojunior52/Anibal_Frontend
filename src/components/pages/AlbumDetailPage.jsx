@@ -3,22 +3,25 @@ import PageWrapper from "../ui/PageWrapper";
 import PageTitle from "../ui/PageTitle";
 import AnimatedCard from "../ui/AnimatedCard";
 import Pagination from "../ui/Pagination";
-// NOVO: Importar ícones para os controlos de zoom
 import { X, ArrowLeft, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { API_URL } from "../../App";
 
+// Página de Detalhes: Exibe todas as fotos de UM álbum específico
 const AlbumDetailPage = ({ gallery, albumName, onBack }) => {
+  
+  // Filtra a galeria completa para pegar apenas as fotos deste álbum
   const imagesForThisAlbum = gallery.filter(
     (image) => (image.album || "Outras Fotos") === albumName
   );
 
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(null); // Foto aberta no modal
+  const [currentPage, setCurrentPage] = useState(1); // Paginação
   const itemsPerPage = 8;
 
-  // NOVO: Estado para controlar o nível de zoom da imagem no modal
+  // Controle de Zoom da imagem no modal
   const [zoom, setZoom] = useState(1);
 
+  // Lógica de Paginação
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentGalleryItems = imagesForThisAlbum.slice(indexOfFirstItem, indexOfLastItem);
@@ -28,15 +31,15 @@ const AlbumDetailPage = ({ gallery, albumName, onBack }) => {
     setCurrentPage(pageNumber);
   };
 
-  // NOVO: Função para abrir a imagem e redefinir o zoom
+  // Abre o modal e reseta o zoom para o padrão (1x)
   const openImageModal = (image) => {
-    setZoom(1); // Redefine o zoom sempre que uma nova imagem é aberta
+    setZoom(1); 
     setSelectedImage(image);
   };
   
-  // NOVO: Funções para controlar o zoom
-  const handleZoomIn = () => setZoom(prev => Math.min(prev * 1.2, 3)); // Limite máximo de zoom 3x
-  const handleZoomOut = () => setZoom(prev => Math.max(prev / 1.2, 0.5)); // Limite mínimo de zoom 0.5x
+  // Funções de manipulação do Zoom
+  const handleZoomIn = () => setZoom(prev => Math.min(prev * 1.2, 3)); // Máximo 3x
+  const handleZoomOut = () => setZoom(prev => Math.max(prev / 1.2, 0.5)); // Mínimo 0.5x
   const resetZoom = () => setZoom(1);
 
   return (
@@ -46,6 +49,7 @@ const AlbumDetailPage = ({ gallery, albumName, onBack }) => {
         subtitle={`Total de ${imagesForThisAlbum.length} fotos neste álbum.`}
       />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        {/* Botão de Voltar */}
         <div className="mb-8">
           <button onClick={onBack} className="inline-flex items-center text-orange-600 hover:text-orange-800 font-semibold transition-colors">
             <ArrowLeft size={18} className="mr-2" />
@@ -53,17 +57,16 @@ const AlbumDetailPage = ({ gallery, albumName, onBack }) => {
           </button>
         </div>
         
+        {/* Grade de Fotos */}
         {currentGalleryItems.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" role="list">
             {currentGalleryItems.map((image, index) => (
               <AnimatedCard key={image._id} style={{ animationDelay: `${index * 100}ms` }} className="h-full" role="listitem">
                 <div
-                  onClick={() => openImageModal(image)} // Usa a nova função
+                  onClick={() => openImageModal(image)} // Abre o modal ao clicar
                   className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer group aspect-square"
                   role="button"
                   tabIndex="0"
-                  aria-label={`Ver imagem ${image.caption} em tamanho maior`}
-                  onKeyPress={(e) => { if (e.key === 'Enter') openImageModal(image); }}
                 >
                   <img
                     src={`${API_URL}${image.url}`}
@@ -89,45 +92,43 @@ const AlbumDetailPage = ({ gallery, albumName, onBack }) => {
         )}
       </div>
 
-      {/* Modal de visualização de imagem completamente refeito */}
+      {/* Modal de Visualização (Lightbox) com Zoom */}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setSelectedImage(null)}
+          onClick={() => setSelectedImage(null)} // Fecha ao clicar fora
           role="dialog"
           aria-modal="true"
         >
-          {/* Container da Imagem com Overflow para permitir o Pan (arrastar) quando o zoom é aplicado */}
+          {/* Container da Imagem com Overflow para permitir mover a imagem com zoom */}
           <div 
             className="relative w-full h-full flex items-center justify-center overflow-auto"
-            onClick={(e) => e.stopPropagation()} // Impede que o clique na imagem feche o modal
+            onClick={(e) => e.stopPropagation()} // Impede fechar ao clicar na imagem/container
           >
             <img
               src={`${API_URL}${selectedImage.url}`}
               alt={selectedImage.caption}
               className="transition-transform duration-200 rounded-lg shadow-2xl"
-              style={{ transform: `scale(${zoom})`, cursor: 'grab' }}
+              style={{ transform: `scale(${zoom})`, cursor: 'grab' }} // Aplica o Zoom
               onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/800x600/CCCCCC/FFFFFF?text=Imagem`; }}
             />
           </div>
 
-          {/* Legenda da Imagem */}
+          {/* Legenda flutuante */}
           <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-lg bg-black/50 px-4 py-2 rounded-lg pointer-events-none">
             {selectedImage.caption}
           </p>
 
-          {/* Botão de Fechar */}
+          {/* Botão Fechar */}
           <button
             onClick={() => setSelectedImage(null)}
             className="absolute top-4 right-4 text-white bg-[#ec9c30] rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
-            aria-label="Fechar visualização da imagem"
           >
             <X size={24} />
           </button>
           
-          {/* Controlos de Zoom */}
+          {/* Barra de Ferramentas de Zoom (Canto superior esquerdo) */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
-            {/* CORREÇÃO: Adicionado e.stopPropagation() para impedir que o modal feche */}
             <button onClick={(e) => { e.stopPropagation(); handleZoomIn(); }} className="p-2 bg-black/50 text-white rounded-full hover:bg-black/80 transition-colors" aria-label="Aumentar zoom">
               <ZoomIn size={24} />
             </button>
@@ -145,4 +146,3 @@ const AlbumDetailPage = ({ gallery, albumName, onBack }) => {
 };
 
 export default AlbumDetailPage;
-

@@ -4,11 +4,12 @@ import { UtensilsCrossed, PlusCircle, List, FileCheck, Clock, Download, AlertTri
 import FileUpload from "../ui/FileUpload";
 import LoadingSpinner from "../ui/LoadingSpinner";
 
+// Formulário de Gerenciamento do Cardápio Escolar (Upload de PDF)
 const MenuFormFull = ({ menu, showNotification, apiService, fetchAllData }) => {
   const [activeTab, setActiveTab] = useState("list");
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState(null); // Arquivo PDF selecionado
   const [isLoading, setIsLoading] = useState(false);
-  const [resetKey, setResetKey] = useState(0);
+  const [resetKey, setResetKey] = useState(0); // Usado para forçar a limpeza do input de arquivo
 
   const resetForm = () => {
     setFile(null);
@@ -20,6 +21,7 @@ const MenuFormFull = ({ menu, showNotification, apiService, fetchAllData }) => {
     setActiveTab("form");
   };
 
+  // Envia o arquivo PDF para a API
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
@@ -35,8 +37,8 @@ const MenuFormFull = ({ menu, showNotification, apiService, fetchAllData }) => {
       await apiService.postForm("/api/menu", formData);
       showNotification("Cardápio atualizado com sucesso!", "success");
       resetForm();
-      await fetchAllData();
-      setActiveTab("list"); // Retorna para a aba de visualização
+      await fetchAllData(); // Recarrega os dados para mostrar o novo cardápio
+      setActiveTab("list"); 
     } catch (e) {
       showNotification(e.message, "error");
     } finally {
@@ -51,10 +53,12 @@ const MenuFormFull = ({ menu, showNotification, apiService, fetchAllData }) => {
     ? new Date(menu.updatedAt).toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' })
     : 'N/A';
   
+  // Extrai o nome do arquivo da URL
   const currentFileName = menu?.fileUrl ? menu.fileUrl.split('/').pop() : 'Nenhum arquivo enviado';
 
   return (
     <FormWrapper title="Gerir Cardápio" icon={<UtensilsCrossed className="mr-2 text-red-500" />}>
+      {/* Navegação entre Status Atual e Atualização */}
       <div className="flex border-b border-gray-200 mb-6">
         <button onClick={() => setActiveTab("list")} className={tabClasses("list")}>
           <List size={18} className="mr-2" />

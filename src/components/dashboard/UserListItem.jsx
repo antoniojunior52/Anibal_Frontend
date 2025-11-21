@@ -1,9 +1,12 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 
+// Item da lista de Gerenciamento de Usuários
+// Permite alternar permissões (Admin/Secretaria) e excluir usuários
 const UserListItem = ({ userItem, currentUser, onPermissionChange, onDelete }) => {
   const isCurrentUser = userItem._id === currentUser.id;
 
+  // Define o rótulo do cargo baseado nas permissões
   const getRoleLabel = (user) => {
     if (user.isAdmin) return "Administrador";
     if (user.isSecretaria) return "Secretaria";
@@ -27,8 +30,9 @@ const UserListItem = ({ userItem, currentUser, onPermissionChange, onDelete }) =
           </span>
         </div>
 
-        {/* Controles de Permissão */}
+        {/* Controles de Permissão (Toggle Switches) */}
         <div className="flex items-center space-x-4 self-end sm:self-center">
+          {/* Toggle Secretaria */}
           <label className="flex items-center cursor-pointer">
             <span className="mr-2 text-sm font-medium text-gray-700">Secretaria</span>
             <div className="relative">
@@ -37,6 +41,8 @@ const UserListItem = ({ userItem, currentUser, onPermissionChange, onDelete }) =
               <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${userItem.isSecretaria ? "translate-x-full" : ""}`}></div>
             </div>
           </label>
+          
+          {/* Toggle Admin */}
           <label className="flex items-center cursor-pointer">
             <span className="mr-2 text-sm font-medium text-gray-700">Admin</span>
             <div className="relative">
@@ -45,10 +51,12 @@ const UserListItem = ({ userItem, currentUser, onPermissionChange, onDelete }) =
               <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${userItem.isAdmin ? "translate-x-full" : ""}`}></div>
             </div>
           </label>
+
+          {/* Botão Excluir */}
           <button
             onClick={() => onDelete(userItem._id)}
             className="text-gray-500 p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isCurrentUser}
+            disabled={isCurrentUser} // Impede excluir a si mesmo
             title={isCurrentUser ? "Não pode apagar o seu próprio perfil" : `Apagar utilizador ${userItem.name}`}
           >
             <Trash2 size={18} />

@@ -3,13 +3,15 @@ import PageWrapper from "../ui/PageWrapper";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import { MailCheck } from "lucide-react";
 
-// ADICIONADO 'showNotification' para um melhor feedback ao utilizador
+// Página de Verificação de E-mail (Código de 6 dígitos)
+// Permite inserir o código ou reenviar caso tenha expirado
 const VerifyEmailPage = ({ navigate, handleVerifyCode, handleResendCode, userEmail, showNotification }) => {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(60);
+  const [resendCooldown, setResendCooldown] = useState(60); // Tempo de espera para reenviar (60s)
 
+  // Efeito para controlar o contador regressivo do botão "Reenviar"
   useEffect(() => {
     if (resendCooldown > 0) {
       const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
@@ -17,13 +19,14 @@ const VerifyEmailPage = ({ navigate, handleVerifyCode, handleResendCode, userEma
     }
   }, [resendCooldown]);
 
-  // A função agora pode receber o código diretamente para auto-submissão
+  // Processa a verificação. Pode ser chamado pelo botão (evento 'e') ou automaticamente (string direta)
   const handleVerificationSubmit = async (eOrCode) => {
     // Previne o comportamento padrão se for um evento de formulário
     if (eOrCode && eOrCode.preventDefault) {
       eOrCode.preventDefault();
     }
     
+    // Verifica se recebeu o evento ou o código direto
     const finalCode = typeof eOrCode === 'string' ? eOrCode : code;
 
     if (finalCode.length < 6) {
@@ -41,6 +44,7 @@ const VerifyEmailPage = ({ navigate, handleVerifyCode, handleResendCode, userEma
     }
   };
 
+  // Gerencia o clique no botão de reenviar código e reinicia o timer
   const handleResendClick = async () => {
     setResendLoading(true);
     try {
@@ -78,11 +82,12 @@ const VerifyEmailPage = ({ navigate, handleVerifyCode, handleResendCode, userEma
                 name="code"
                 type="text"
                 value={code}
+                // Permite apenas números e limita a 6 caracteres
                 onChange={(e) => {
                   const value = e.target.value.replace(/[^0-9]/g, "");
                   if (value.length <= 6) {
                     setCode(value);
-                    // LÓGICA DE AUTO-SUBMISSÃO
+                    // LÓGICA DE AUTO-SUBMISSÃO: Envia sozinho ao completar 6 dígitos
                     if (value.length === 6) {
                       handleVerificationSubmit(value);
                     }

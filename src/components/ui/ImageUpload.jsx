@@ -1,13 +1,12 @@
-// src/components/ui/ImageUpload.jsx
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { UploadCloud, X, AlertCircle } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 
+// Componente para upload de uma ÚNICA imagem (com suporte a mostrar imagem já existente)
 export default function ImageUpload({
   label,
   onChange,
-  existingImageUrl,
+  existingImageUrl, // URL de uma imagem que já existe (ex: ao editar perfil)
   isLoading,
   maxSizeMB = 5,
   allowedTypes = ['image/jpeg', 'image/png', 'image/gif'],
@@ -16,6 +15,7 @@ export default function ImageUpload({
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState('');
 
+  // Se receber uma URL existente, define ela como preview inicial
   useEffect(() => {
     if (existingImageUrl) {
       setPreview(existingImageUrl);
@@ -25,6 +25,7 @@ export default function ImageUpload({
     }
   }, [existingImageUrl]);
   
+  // Valida tamanho e tipo do arquivo
   const validateFile = (file) => {
     if (!file) return false;
     if (file.size > maxSizeMB * 1024 * 1024) {
@@ -39,6 +40,7 @@ export default function ImageUpload({
     return true;
   };
 
+  // Processa o arquivo selecionado e gera o preview
   const handleFileChange = useCallback((file) => {
     if (validateFile(file)) {
       const reader = new FileReader();
@@ -52,6 +54,7 @@ export default function ImageUpload({
     }
   }, [maxSizeMB, allowedTypes, onChange]);
 
+  // Lida com o evento de "soltar" o arquivo na área (Drop)
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -61,10 +64,12 @@ export default function ImageUpload({
     }
   }, [handleFileChange]);
 
+  // Limpa a imagem selecionada
   const removeImage = () => {
     setPreview(null);
     onChange(null);
     setError('');
+    // Limpa o input file HTML para permitir selecionar o mesmo arquivo novamente se necessário
     const fileInput = document.querySelector('input[type="file"]');
     if(fileInput) fileInput.value = "";
   };
@@ -74,6 +79,8 @@ export default function ImageUpload({
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      
+      {/* Se tem imagem (preview), mostra a imagem. Se não, mostra a área de upload */}
       {preview ? (
         <div className="relative group w-full max-w-xs mx-auto aspect-square">
           <img src={preview} alt="Pré-visualização" className="w-full h-full object-cover rounded-md" />
@@ -89,6 +96,7 @@ export default function ImageUpload({
         </div>
       ) : (
         <>
+          {/* Área de Upload */}
           <div
             onDrop={handleDrop}
             onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}

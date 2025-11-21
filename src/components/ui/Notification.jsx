@@ -1,8 +1,9 @@
 import React from "react";
 import { X } from "lucide-react";
 
+// Componente de notificação tipo "Toast" (pop-up no canto da tela)
 const Notification = ({ message, type, onClose }) => {
-  if (!message) return null;
+  if (!message) return null; // Se não tem mensagem, não mostra nada
 
   // 1. Consolidei todos os estilos em um único objeto
   const typeStyles = {
@@ -16,6 +17,7 @@ const Notification = ({ message, type, onClose }) => {
 
   return (
     // 3. Apliquei tudo em UM ÚNICO 'className'
+    // Usa 'translate-x' para fazer a animação de deslizar da direita
     <div
       className={`fixed top-5 right-5 z-50 flex items-center p-4 rounded-lg shadow-lg font-bold transition-all duration-300 transform 
         ${styleClasses} 
@@ -23,6 +25,7 @@ const Notification = ({ message, type, onClose }) => {
       `}
     >
       <span className="flex-grow">{message}</span>
+      {/* Botão de fechar a notificação */}
       <button
         onClick={onClose}
         className="ml-4 p-1 rounded-full hover:bg-black/20"

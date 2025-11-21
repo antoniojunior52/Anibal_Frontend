@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Search } from 'lucide-react';
 
+// Barra de pesquisa reutilizável com ícone
 const SearchBar = ({ onSearch, placeholder = "Pesquisar...", id }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Atualiza o estado local e avisa o componente pai que o texto mudou
   const handleInputChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    onSearch(value);
+    onSearch(value); // Passa o valor digitado para a função de filtro externa
   };
 
   return (
@@ -23,6 +25,7 @@ const SearchBar = ({ onSearch, placeholder = "Pesquisar...", id }) => {
                    text-gray-800 placeholder-gray-400"
         aria-label={placeholder}
       />
+      {/* Ícone de lupa posicionado dentro do input (lado esquerdo) */}
       <span
         className="absolute left-0 pl-3 text-gray-400"
         aria-hidden="true"

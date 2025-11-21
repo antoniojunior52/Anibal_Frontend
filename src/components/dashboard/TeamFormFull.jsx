@@ -6,15 +6,18 @@ import ImageUpload from "../ui/ImageUpload";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import TeamMemberCard from "./TeamMemberCard";
 
+// Formulário de Gerenciamento de Equipe (Professores/Diretoria)
+// Permite criar, editar e excluir membros da equipe
 const TeamFormFull = ({ team, fetchAllData, handleSave, handleDelete, showNotification }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("list");
+  // Estados do formulário
   const [file, setFile] = useState(null);
   const [name, setName] = useState("");
   const [role, setRole] = useState("Professor(a)");
   const [subjects, setSubjects] = useState("");
   const [bio, setBio] = useState("");
-  const [editing, setEditing] = useState(null);
+  const [editing, setEditing] = useState(null); // Membro sendo editado
   const [resetKey, setResetKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,6 +31,7 @@ const TeamFormFull = ({ team, fetchAllData, handleSave, handleDelete, showNotifi
     setActiveTab("form");
   };
 
+  // Preenche o formulário para edição
   const handleEdit = (p) => {
     setEditing(p); setName(p.name); setRole(p.role); 
     setSubjects(p.subjects.join(", "));
@@ -36,6 +40,7 @@ const TeamFormFull = ({ team, fetchAllData, handleSave, handleDelete, showNotifi
     window.scrollTo(0, 0);
   };
 
+  // Salva o membro da equipe (cria ou atualiza)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!editing && !file) {
@@ -49,6 +54,7 @@ const TeamFormFull = ({ team, fetchAllData, handleSave, handleDelete, showNotifi
     formData.append("bio", bio);
     if (file) formData.append("file", file);
     try {
+      // handleSave lida com POST/PUT dependendo do ID
       await handleSave("/api/team", fetchAllData)(formData, editing?._id);
       resetForm();
       showNotification("Perfil salvo!", "success");
@@ -65,6 +71,7 @@ const TeamFormFull = ({ team, fetchAllData, handleSave, handleDelete, showNotifi
 
   return (
     <FormWrapper title="Gerir Equipe" icon={<Users className="mr-2 text-purple-500" />}>
+      {/* Navegação por Abas */}
       <div className="flex border-b border-gray-200 mb-6">
         <button onClick={() => setActiveTab("list")} className={tabClasses("list")}>
           <List size={18} className="mr-2" />
@@ -76,6 +83,7 @@ const TeamFormFull = ({ team, fetchAllData, handleSave, handleDelete, showNotifi
         </button>
       </div>
 
+      {/* Formulário de Cadastro/Edição */}
       {activeTab === 'form' && (
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 items-start">
@@ -87,9 +95,10 @@ const TeamFormFull = ({ team, fetchAllData, handleSave, handleDelete, showNotifi
                 <option value="Vice-Diretora">Vice-Diretora</option> <option value="Coordenador(a)">Coordenador(a)</option> </select> <label htmlFor="team-role" className="absolute left-3 text-gray-500 transition-all duration-200 ease-in-out bg-white px-1 cursor-text top-[-10px] text-xs text-purple-500">Função</label> <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"><svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg></div>
             </div>
             <FloatingLabelInput id="team-subjects" label="Matérias (separadas por vírgula)" type="text" value={subjects} onChange={(e) => setSubjects(e.target.value)} />
-            {/* CORREÇÃO: Alterado de 'editing?.photoUrl' para 'editing?.imageUrl' */}
+            {/* Upload da Foto */}
             <div className="pt-2"><ImageUpload key={resetKey} label="Foto do Perfil" onChange={setFile} existingImageUrl={editing?.imageUrl} /></div>
           </div>
+          {/* Biografia */}
           <div className="relative">
             <textarea id="team-bio" placeholder=" " value={bio} onChange={(e) => setBio(e.target.value)} className="block w-full px-3 py-2 mt-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent peer" rows="3" required></textarea>
             <label htmlFor="team-bio" className={`absolute left-3 text-gray-500 transition-all duration-200 ease-in-out cursor-text ${bio ? 'top-[-10px] text-xs text-purple-500 bg-white px-1' : 'top-2 text-base'} peer-focus:top-[-10px] peer-focus:text-xs peer-focus:text-purple-500 peer-focus:bg-white peer-focus:px-1`}>Biografia</label>
@@ -103,6 +112,7 @@ const TeamFormFull = ({ team, fetchAllData, handleSave, handleDelete, showNotifi
         </form>
       )}
 
+      {/* Lista de Membros */}
       {activeTab === 'list' && (
         <div className="animate-fade-in">
           <div className="relative mb-8">
