@@ -43,7 +43,7 @@ const apiService = {
       body: isFormData ? data : JSON.stringify(data),
     });
 
-    // Tenta ler o JSON da resposta, mesmo se deu erro (para pegar a mensagem do backend)
+    // Tenta ler o JSON da resposta, mesmo se deu erro
     let responseData;
     try {
       responseData = await res.json();
@@ -53,8 +53,12 @@ const apiService = {
 
     // Se a resposta não for OK (200-299), lança o erro personalizado
     if (!res.ok) {
+      // <--- AQUI ESTÁ A CORREÇÃO MÁGICA --->
+      // Agora ele procura 'error' (do NSFW) OU 'msg' (do resto do sistema)
+      const errorMessage = responseData.error || responseData.msg || `Erro HTTP! Status: ${res.status}`;
+      
       throw new ApiError(
-        responseData.msg || `Erro HTTP! Status: ${res.status}`,
+        errorMessage,
         res.status,
         responseData
       );

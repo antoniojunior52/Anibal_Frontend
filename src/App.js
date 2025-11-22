@@ -7,8 +7,12 @@ import apiService from "./services/apiService.js";
 // Hook personalizado para carregar bibliotecas externas (ex: SheetJS)
 import { loadSheetJS } from "./hooks/hooks.js";
 
+// --- NOTIFICAÇÕES MODERNAS (TOASTIFY) ---
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 // --- Componentes de Interface (UI) ---
-import Notification from "./components/ui/Notification";
+// O import Notification foi removido pois foi substituído pelo Toastify
 import Header from "./components/ui/Header";
 import Footer from "./components/ui/Footer";
 import PageTitle from "./components/ui/PageTitle";
@@ -42,7 +46,6 @@ import ResetPasswordPage from "./components/pages/ResetPasswordPage";
 import ErrorPage from "./components/pages/ErrorPage";
 import NoticesPage from "./components/pages/NoticesPage";
 import AlbumDetailPage from "./components/pages/AlbumDetailPage";
-// A página de verificação de email foi removida
 
 // --- Componentes do Painel Administrativo (Dashboard) ---
 import DashboardHome from "./components/dashboard/DashboardHome";
@@ -69,7 +72,6 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Se o usuário está logado
   const [user, setUser] = useState(null); // Dados do usuário logado
   const [isChatbotOpen, setIsChatbotOpen] = useState(false); // Se o chat está aberto
-  // O estado 'userEmailForVerification' foi removido pois não é mais necessário
 
   // --- ESTADOS DE DADOS DO SITE ---
   const [news, setNews] = useState([]);
@@ -83,7 +85,7 @@ export default function App() {
   const [users, setUsers] = useState([]); // Lista de usuários (apenas admin vê)
 
   // --- ESTADOS DE UI (Interface) ---
-  const [notification, setNotification] = useState({ message: "", type: "" }); // Notificações topo da tela
+  // O estado 'notification' foi removido pois o Toastify gerencia isso internamente
 
   // Modal de Confirmação (Sim/Não)
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -151,10 +153,33 @@ export default function App() {
     setGenericModalContent(null);
   }, []);
 
-  // Exibe uma notificação (Toast) que desaparece após 4 segundos
-  const showNotification = useCallback((message, type) => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification({ message: "", type: "" }), 4000);
+  // Exibe uma notificação usando React-Toastify
+  const showNotification = useCallback((message, type = "info") => {
+    const options = {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
+    };
+
+    switch (type) {
+      case "success":
+        toast.success(message, options);
+        break;
+      case "error":
+        toast.error(message, options);
+        break;
+      case "warning":
+        toast.warn(message, options);
+        break;
+      default:
+        toast.info(message, options);
+        break;
+    }
   }, []);
 
   // --- CARREGAMENTO DE DADOS ---
@@ -443,8 +468,8 @@ export default function App() {
       showNotification(id ? "Item atualizado com sucesso." : "Item salvo com sucesso.", "success");
       if (fetchFunction) fetchFunction();
     } catch (e) {
-      showNotification(e.message, "error");
-      throw e;
+      // REMOVIDO: showNotification(e.message, "error"); para evitar duplicação
+      throw e; // Repassa o erro para o formulário tratar e mostrar a notificação
     } finally {
       setGlobalLoading(false);
     }
@@ -547,11 +572,9 @@ export default function App() {
 
   return (
     <div className="bg-[#f3f4f6] text-[#1f2937] min-h-screen flex flex-col font-sans antialiased">
-      <Notification
-        message={notification.message}
-        type={notification.type}
-        onClose={() => setNotification({ message: "", type: "" })}
-      />
+      {/* ToastContainer substitui o antigo componente Notification */}
+      <ToastContainer />
+      
       <Header
         onNavigate={navigate}
         onLogin={() => navigate("login")}
