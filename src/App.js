@@ -603,7 +603,8 @@ export default function App() {
       >
         {genericModalContent}
       </Modal>
-      {/* COMENTADO PARA REMOVER O CHATBOT DA TELA
+      {/* COMENTADO PARA REMOVER O CHATBOT DA TELA 
+      MOTIVO: Requisitos do projeto não incluem mais o assistente virtual.
       {isChatbotOpen && <AIChatbot onClose={() => setIsChatbotOpen(false)} />}
       {!isChatbotOpen && (
         <button
