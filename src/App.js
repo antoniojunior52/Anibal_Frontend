@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ArrowLeft, Bot } from "lucide-react";
+// Removi o ícone 'Bot' da importação
+import { ArrowLeft } from "lucide-react"; 
 
 // Serviço para conectar com o Backend (API)
 import apiService from "./services/apiService.js";
@@ -12,7 +13,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // --- Componentes de Interface (UI) ---
-// O import Notification foi removido pois foi substituído pelo Toastify
 import Header from "./components/ui/Header";
 import Footer from "./components/ui/Footer";
 import PageTitle from "./components/ui/PageTitle";
@@ -21,7 +21,7 @@ import CustomFileInput from "./components/ui/CustomFileInput";
 import ConfirmationModal from "./components/ui/ConfirmationModal";
 import LoadingSpinner from "./components/ui/LoadingSpinner";
 import Modal from "./components/ui/Modal";
-import AIChatbot from "./components/ui/AIChatbot";
+// import AIChatbot from "./components/ui/AIChatbot"; // <--- COMENTADO
 import AccessibilityMenu from "./components/ui/AccessibilityMenu.jsx";
 
 // Configuração de datas para componentes de calendário (Padrão Brasileiro)
@@ -71,7 +71,8 @@ export default function App() {
   const [pagePayload, setPagePayload] = useState(null); // Dados extras para a página (ex: ID de uma notícia)
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Se o usuário está logado
   const [user, setUser] = useState(null); // Dados do usuário logado
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false); // Se o chat está aberto
+  
+  // const [isChatbotOpen, setIsChatbotOpen] = useState(false); // <--- COMENTADO (Estado do Chatbot)
 
   // --- ESTADOS DE DADOS DO SITE ---
   const [news, setNews] = useState([]);
@@ -85,8 +86,6 @@ export default function App() {
   const [users, setUsers] = useState([]); // Lista de usuários (apenas admin vê)
 
   // --- ESTADOS DE UI (Interface) ---
-  // O estado 'notification' foi removido pois o Toastify gerencia isso internamente
-
   // Modal de Confirmação (Sim/Não)
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmModalMessage, setConfirmModalMessage] = useState("");
@@ -382,8 +381,9 @@ export default function App() {
       showNotification("Perfil atualizado com sucesso!", "success");
 
     } catch (error) {
+      // CORREÇÃO: Removemos o throw error para não travar a tela
       showNotification(error.message, "error");
-      throw error;
+      // throw error; // REMOVIDO
     } finally {
       setGlobalLoading(false);
     }
@@ -396,8 +396,9 @@ export default function App() {
       await apiService.put("/api/users/change-password", passwordData);
       showNotification("Senha alterada com sucesso!", "success");
     } catch (error) {
+      // CORREÇÃO: Removemos o throw error para não travar a tela
       showNotification(error.message, "error");
-      throw error;
+      // throw error; // REMOVIDO
     } finally {
       setGlobalLoading(false);
     }
@@ -602,6 +603,7 @@ export default function App() {
       >
         {genericModalContent}
       </Modal>
+      {/* COMENTADO PARA REMOVER O CHATBOT DA TELA
       {isChatbotOpen && <AIChatbot onClose={() => setIsChatbotOpen(false)} />}
       {!isChatbotOpen && (
         <button
@@ -612,6 +614,7 @@ export default function App() {
           <Bot size={24} />
         </button>
       )}
+      */}
       <AccessibilityMenu
         toggleContrast={toggleContrast}
         increaseFontSize={increaseFontSize}

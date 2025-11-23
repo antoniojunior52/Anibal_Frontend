@@ -5,40 +5,60 @@ import { Camera, PlusCircle, List, Search } from "lucide-react";
 import MultiImageUpload from "../ui/MultiImageUpload";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import AlbumCard from "./AlbumCard";
-import GalleryModal from "../ui/GalleryModal"; // Importe o novo modal
+import GalleryModal from "../ui/GalleryModal";
 
-// Formulário de Gerenciamento da Galeria de Fotos
-// Permite criar álbuns, fazer upload de fotos e excluir álbuns ou fotos individuais
+/**
+ * Componente: GalleryFormFull
+ * Descrição: Gerencia a criação de álbuns, upload de fotos e exclusão (CRUD da Galeria).
+ * * Props:
+ * - gallery: Lista completa de fotos vinda do App.js
+ * - fetchAllData: Função para recarregar os dados após uma ação
+ * - handleSave: Função genérica do App.js para POST/PUT (agora repassa erros)
+ * - handleDelete: Função genérica do App.js para DELETE
+ * - showNotification: Função para exibir Toasts (Sucesso/Erro)
+ * - showConfirm: Função para exibir modal de confirmação
+ */
 const GalleryFormFull = ({ gallery, fetchAllData, handleSave, handleDelete, showNotification, showConfirm }) => {
+  // --- ESTADOS ---
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("list"); // Alterna entre Lista de Álbuns e Formulário de Criação
-  const [files, setFiles] = useState([]); // Arquivos selecionados para upload
+  const [activeTab, setActiveTab] = useState("list"); // Controla se vê a Lista ou o Formulário
+  const [files, setFiles] = useState([]); // Array de arquivos selecionados no upload
   const [albumName, setAlbumName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Estados para controlar o modal de visualização/edição
+  // Estados do Modal de Visualização de Fotos
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalPhotos, setModalPhotos] = useState([]);
 
+  // --- FUNÇÕES AUXILIARES ---
+
+  // Limpa o formulário após salvar ou cancelar
   const resetForm = () => {
     setFiles([]);
     setAlbumName("");
   };
 
-  // Abre o modal para ver as fotos de um álbum específico
+  // Abre o modal ao clicar em um álbum
   const handleViewAlbum = (photos) => {
     setModalPhotos(photos);
     setIsModalOpen(true);
   };
 
+  // Fecha o modal e limpa a seleção
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setModalPhotos([]);
   };
 
-  // Envia o novo álbum e suas fotos para a API
+  // --- AÇÕES DO USUÁRIO (HANDLERS) ---
+
+  /**
+   * Envia o novo álbum e fotos para o servidor (POST)
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validações básicas antes de enviar
     if (files.length === 0) {
       showNotification("Selecione pelo menos uma imagem.", "error"); return;
     }
@@ -49,54 +69,69 @@ const GalleryFormFull = ({ gallery, fetchAllData, handleSave, handleDelete, show
     setIsLoading(true);
     const formData = new FormData();
     formData.append("album", albumName.trim());
-    // Adiciona cada arquivo ao FormData para envio
+    
+    // Adiciona cada arquivo selecionado ao FormData
     files.forEach((file) => formData.append(`files`, file));
 
     try {
+      // Chama a API. Se der erro (ex: NSFW), vai cair no catch abaixo.
       await handleSave("/api/gallery", fetchAllData)(formData);
+      
       resetForm();
       showNotification("Álbum adicionado com sucesso!", "success");
       setActiveTab("list");
     } catch (error) {
+      // CORREÇÃO: Agora exibimos o erro que veio do backend (ex: Conteúdo Bloqueado)
+      showNotification(error.message, "error");
     } finally {
       setIsLoading(false);
     }
   };
   
-  // Exclui um álbum inteiro e todas as suas fotos
+  /**
+   * Exclui um álbum inteiro e suas fotos
+   */
   const handleDeleteAlbum = async (nameOfAlbumToDelete) => {
     const confirmed = await showConfirm(`Tem a certeza de que deseja apagar o álbum "${nameOfAlbumToDelete}" e todas as suas fotos?`);
+    
     if (confirmed) {
       const encodedAlbumName = encodeURIComponent(nameOfAlbumToDelete);
       try {
         await handleDelete(`/api/gallery/album/${encodedAlbumName}`, fetchAllData)();
-      } catch (error) {}
+      } catch (error) {
+        // Exibe erro caso falhe ao deletar o álbum
+        showNotification(error.message, "error");
+      }
     }
   };
   
-  // *** NOVA FUNÇÃO: Exclui uma única imagem de dentro de um álbum ***
+  /**
+   * Exclui uma única imagem de dentro de um álbum (chamado pelo Modal)
+   */
   const handleDeleteImage = async (photo) => {
     const confirmed = await showConfirm(`Tem a certeza de que deseja apagar esta foto do álbum "${photo.album}"?`);
+    
     if (confirmed) {
       try {
-        // O handleDelete vem do hook useApi e já chama o fetchAllData e mostra notificação de erro
         await handleDelete(`/api/gallery/${photo._id}`, fetchAllData)(); 
         
-        // Atualiza a lista de fotos do modal localmente para refletir a exclusão imediatamente
+        // Atualiza a lista local do modal para a imagem sumir na hora (sem recarregar tudo)
         setModalPhotos(prevPhotos => prevPhotos.filter(p => p._id !== photo._id));
         showNotification("Foto apagada com sucesso.", "success");
 
-        // Se era a última foto, fecha o modal
+        // Se o usuário apagou a última foto do álbum, fecha o modal automaticamente
         if (modalPhotos.length === 1) {
           handleCloseModal();
         }
       } catch (error) {
-        // O erro já é tratado pelo hook/função handleDelete
+        showNotification(error.message, "error");
       }
     }
   };
 
-  // Agrupa as fotos soltas por nome de álbum para exibição na lista
+  // --- MEMOIZAÇÃO E FILTROS ---
+
+  // Agrupa a lista plana de fotos em objetos de Álbuns: { "Nome do Album": [foto1, foto2] }
   const albums = useMemo(() => {
     const grouped = gallery.reduce((acc, photo) => {
       const album = photo.album || 'Outras Fotos';
@@ -106,16 +141,20 @@ const GalleryFormFull = ({ gallery, fetchAllData, handleSave, handleDelete, show
       acc[album].push(photo);
       return acc;
     }, {});
+    // Converte objeto em array para facilitar o .map() no render
     return Object.entries(grouped).map(([name, photos]) => ({ name, photos }));
   }, [gallery]);
 
+  // Classes CSS dinâmicas para as abas de navegação
   const tabClasses = (tabName) => `flex items-center justify-center w-full px-4 py-3 font-semibold transition-all duration-300 border-b-2
     ${activeTab === tabName ? "border-sky-500 text-sky-500" : "border-transparent text-gray-500 hover:text-gray-800"}`;
 
+  // --- RENDERIZAÇÃO ---
   return (
     <>
       <FormWrapper title="Gerir Galeria" icon={<Camera className="mr-2 text-sky-500" />}>
-        {/* Navegação entre Listagem e Criação */}
+        
+        {/* Navegação (Abas) */}
         <div className="flex border-b border-gray-200 mb-6">
           <button onClick={() => setActiveTab("list")} className={tabClasses("list")}>
             <List size={18} className="mr-2" />
@@ -127,11 +166,12 @@ const GalleryFormFull = ({ gallery, fetchAllData, handleSave, handleDelete, show
           </button>
         </div>
 
-        {/* Formulário de Criação */}
+        {/* --- FORMULÁRIO DE CRIAÇÃO --- */}
         {activeTab === 'form' && (
           <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
             <MultiImageUpload label="Selecione as Imagens do Álbum" onChange={setFiles} maxFiles={20} />
             <FloatingLabelInput id="gallery-album-name" label="Nome do Novo Álbum" type="text" value={albumName} onChange={(e) => setAlbumName(e.target.value)} required />
+            
             <div className="flex flex-col sm:flex-row gap-4">
               <button type="button" onClick={() => { resetForm(); setActiveTab("list"); }} className="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600">
                 Cancelar
@@ -143,10 +183,10 @@ const GalleryFormFull = ({ gallery, fetchAllData, handleSave, handleDelete, show
           </form>
         )}
 
-        {/* Listagem de Álbuns */}
+        {/* --- LISTAGEM DE ÁLBUNS --- */}
         {activeTab === 'list' && (
           <div className="animate-fade-in">
-            {/* Barra de Pesquisa */}
+            {/* Campo de Busca */}
             <div className="relative mb-8">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <Search className="h-5 w-5 text-gray-400" />
@@ -159,8 +199,9 @@ const GalleryFormFull = ({ gallery, fetchAllData, handleSave, handleDelete, show
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition"
               />
             </div>
+
+            {/* Renderização da Lista Filtrada */}
             {(() => {
-              // Filtra álbuns pelo nome
               const filteredAlbums = albums.filter(album => album.name.toLowerCase().includes(searchQuery.toLowerCase()));
               
               if (filteredAlbums.length > 0) {
@@ -171,7 +212,7 @@ const GalleryFormFull = ({ gallery, fetchAllData, handleSave, handleDelete, show
                         key={album.name}
                         albumName={album.name}
                         photos={album.photos}
-                        onView={handleViewAlbum} // Passa a função para abrir o modal
+                        onView={handleViewAlbum}
                         onDelete={handleDeleteAlbum}
                       />
                     ))}
@@ -200,7 +241,7 @@ const GalleryFormFull = ({ gallery, fetchAllData, handleSave, handleDelete, show
         )}
       </FormWrapper>
       
-      {/* Modal para ver e gerenciar fotos individuais */}
+      {/* Modal para gerenciar fotos individuais */}
       <GalleryModal 
         isOpen={isModalOpen}
         onClose={handleCloseModal}
