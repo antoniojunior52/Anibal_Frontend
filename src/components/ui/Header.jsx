@@ -4,7 +4,13 @@ import NavItem from "./NavItem";
 import MobileNavItem from "./MobileNavItem";
 
 // Cabeçalho principal da aplicação (Barra de Navegação)
-const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) => {
+const Header = ({
+  onNavigate,
+  onLogin,
+  isLoggedIn,
+  onLogout,
+  onGlobalSearch,
+}) => {
   // Estado para controlar se o menu Mobile está aberto ou fechado
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -20,25 +26,34 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
         <div className="flex items-center justify-between h-20">
           {/* Logo e Nome da Escola */}
           <div
-            className="flex items-center space-x-3 cursor-pointer"
+            className="flex items-center space-x-3 cursor-pointer overflow-hidden" // Adicionado overflow-hidden para segurança
             onClick={() => onNavigate("home")}
             role="link"
             tabIndex="0"
             aria-label="Ir para a página inicial"
-            onKeyPress={(e) => { if (e.key === 'Enter') onNavigate('home'); }}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") onNavigate("home");
+            }}
           >
             <img
               src="/logo.jpg"
               alt="Logo da Escola E.E Profº Anibal do Prado e Silva"
-              className="rounded-full w-12 h-12 sm:w-16 sm:h-16 object-cover"
+              className="rounded-full w-10 h-10 sm:w-16 sm:h-16 object-cover flex-shrink-0" // w-10 h-10 no mobile para economizar espaço
             />
-            <h1 className="text-sm sm:text-xl font-bold text-[#4455a3]">
+
+            {/* Nome da Escola */}
+            {/* line-clamp-2: Limita a 2 linhas e põe "..." se passar disso (segurança) */}
+            {/* leading-tight: Junta as linhas para parecer um bloco único */}
+            <h1 className="text-sm sm:text-lg md:text-xl font-bold text-[#4455a3] leading-tight line-clamp-2">
               E.E Profº Anibal do Prado e Silva
             </h1>
           </div>
 
           {/* Navegação principal (Desktop) - visível apenas em telas 'lg' para cima */}
-          <nav className="hidden lg:flex items-center space-x-1" aria-label="Navegação Principal">
+          <nav
+            className="hidden lg:flex items-center space-x-1"
+            aria-label="Navegação Principal"
+          >
             <NavItem onClick={() => onNavigate("news")}>Notícias</NavItem>
             <NavItem onClick={() => onNavigate("notices")}>Recados</NavItem>
             <NavItem onClick={() => onNavigate("teachers")}>Equipe</NavItem>
@@ -100,21 +115,47 @@ const Header = ({ onNavigate, onLogin, isLoggedIn, onLogout, onGlobalSearch }) =
 
       {/* Menu Dropdown (Mobile) - Renderizado apenas se isMenuOpen for true */}
       {isMenuOpen && (
-        <div className="lg:hidden bg-white absolute top-20 left-0 w-full shadow-lg z-50" role="menu">
-          <nav className="flex flex-col p-4 space-y-2">
-            <MobileNavItem onClick={() => handleMobileNav("news")}>Notícias</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("notices")}>Recados</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("teachers")}>Equipe</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("history")}>História</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("events")}>Eventos</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("gallery")}>Galeria</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("schedules")}>Horários</MobileNavItem>
-            <MobileNavItem onClick={() => handleMobileNav("menu")}>Cardápio</MobileNavItem>
+        // ---  Barra de Rolagem ---
+        // max-h-[calc(100vh-5rem)]: Altura máxima é a tela inteira menos a altura do header (aprox 80px/5rem)
+        // overflow-y-auto: Adiciona rolagem vertical se o conteúdo for maior que a altura disponível
+        <div
+          className="lg:hidden bg-white absolute top-20 left-0 w-full shadow-lg z-50 max-h-[calc(100vh-5rem)] overflow-y-auto border-t border-gray-100"
+          role="menu"
+        >
+          <nav className="flex flex-col p-4 space-y-2 pb-20">
+            {" "}
+            {/* pb-20 adicionado para garantir espaço extra no final da rolagem */}
+            <MobileNavItem onClick={() => handleMobileNav("news")}>
+              Notícias
+            </MobileNavItem>
+            <MobileNavItem onClick={() => handleMobileNav("notices")}>
+              Recados
+            </MobileNavItem>
+            <MobileNavItem onClick={() => handleMobileNav("teachers")}>
+              Equipe
+            </MobileNavItem>
+            <MobileNavItem onClick={() => handleMobileNav("history")}>
+              História
+            </MobileNavItem>
+            <MobileNavItem onClick={() => handleMobileNav("events")}>
+              Eventos
+            </MobileNavItem>
+            <MobileNavItem onClick={() => handleMobileNav("gallery")}>
+              Galeria
+            </MobileNavItem>
+            <MobileNavItem onClick={() => handleMobileNav("schedules")}>
+              Horários
+            </MobileNavItem>
+            <MobileNavItem onClick={() => handleMobileNav("menu")}>
+              Cardápio
+            </MobileNavItem>
             <hr className="border-gray-200 my-2" />
             {/* Opções de Login/Logout no Mobile */}
             {isLoggedIn ? (
               <>
-                <MobileNavItem onClick={() => handleMobileNav("dashboard")}>Dashboard</MobileNavItem>
+                <MobileNavItem onClick={() => handleMobileNav("dashboard")}>
+                  Dashboard
+                </MobileNavItem>
                 <MobileNavItem
                   onClick={() => {
                     onLogout("Você saiu da sua conta.", "success");
